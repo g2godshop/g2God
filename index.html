@@ -1277,10 +1277,49 @@
         price: '$89.00',
         testimony: 'A test profile for the G2GOD player globe.',
         bio: 'Position: Center. Shoots: Right. 7-0, 280lb (213cm, 127kg). Team: Philadelphia 76ers.',
-        statsRows: [
-          { summary: '2025-26', G: '38', PTS: '26.9', TRB: '7.7', AST: '3.9', 'FG%': '48.9', 'FG3%': '33.3', 'FT%': '85.4', 'eFG%': '52.7', PER: '24.7', WS: '4.1' },
-          { summary: 'Career', G: '490', PTS: '27.6', TRB: '10.8', AST: '3.7', 'FG%': '50.0', 'FG3%': '33.9', 'FT%': '83.0', 'eFG%': '53.3', PER: '28.0', WS: '69.0' }
-        ]
+        stats: {
+          G: '490',
+          PTS: '27.6',
+          TRB: '10.8',
+          AST: '3.7',
+          'FG%': '50.0',
+          'FG3%': '33.9',
+          'FT%': '83.0',
+          'eFG%': '53.3',
+          PER: '28.0',
+          WS: '69.0'
+        }
+      },
+      {
+        id: 300030,
+        name: 'Stephen Curry',
+        fullName: 'Stephen Curry II',
+        aliases: 'Steph, Baby-Faced Assassin, Chef Curry, The Human Torch, Threezus',
+        sport: 'Basketball',
+        team: 'Golden State Warriors',
+        location: 'San Francisco, CA',
+        region: 'San Francisco, CA',
+        state: 'CA',
+        coords: [37.7749, -122.4194],
+        photo: 'assets/players/stephen-curry-card.png',
+        productImage: 'assets/players/stephen-curry-card.png',
+        productName: 'Stephen Curry II G2GOD Player Card',
+        productCta: 'Buy Card',
+        price: '$219.00',
+        testimony: 'A test profile for the G2GOD player globe.',
+        bio: 'Position: Point Guard. Shoots: Right. 6-2, 185lb (188cm, 83kg). Team: Golden State Warriors.',
+        stats: {
+          G: '1069',
+          PTS: '24.8',
+          TRB: '4.7',
+          AST: '6.3',
+          'FG%': '47.1',
+          'FG3%': '42.2',
+          'FT%': '91.2',
+          'eFG%': '58.2',
+          PER: '23.4',
+          WS: '147.1'
+        }
       }
     ];
 
@@ -1290,7 +1329,9 @@
       defaultPlayers.forEach(defaultPlayer => {
         const existingIndex = merged.findIndex(player => player.id === defaultPlayer.id || player.name === defaultPlayer.name);
         if (existingIndex >= 0) {
-          merged[existingIndex] = { ...defaultPlayer, ...merged[existingIndex], stats: merged[existingIndex].stats || defaultPlayer.stats, statsRows: merged[existingIndex].statsRows || defaultPlayer.statsRows };
+          const updatedPlayer = { ...merged[existingIndex], ...defaultPlayer };
+          if (!Object.prototype.hasOwnProperty.call(defaultPlayer, 'statsRows')) delete updatedPlayer.statsRows;
+          merged[existingIndex] = updatedPlayer;
         } else {
           merged.push(defaultPlayer);
         }

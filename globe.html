@@ -259,6 +259,7 @@
       display: grid;
       gap: 10px;
       margin-bottom: 18px;
+      position: relative;
     }
 
     .region-search input {
@@ -629,10 +630,48 @@
         productName: 'Joel Embiid Philadelphia 76ers Black Jersey',
         price: '$89.00',
         bio: 'Position: Center. Shoots: Right. 7-0, 280lb (213cm, 127kg). Team: Philadelphia 76ers.',
-        statsRows: [
-          { summary: '2025-26', G: '38', PTS: '26.9', TRB: '7.7', AST: '3.9', 'FG%': '48.9', 'FG3%': '33.3', 'FT%': '85.4', 'eFG%': '52.7', PER: '24.7', WS: '4.1' },
-          { summary: 'Career', G: '490', PTS: '27.6', TRB: '10.8', AST: '3.7', 'FG%': '50.0', 'FG3%': '33.9', 'FT%': '83.0', 'eFG%': '53.3', PER: '28.0', WS: '69.0' }
-        ]
+        stats: {
+          G: '490',
+          PTS: '27.6',
+          TRB: '10.8',
+          AST: '3.7',
+          'FG%': '50.0',
+          'FG3%': '33.9',
+          'FT%': '83.0',
+          'eFG%': '53.3',
+          PER: '28.0',
+          WS: '69.0'
+        }
+      },
+      {
+        id: 300030,
+        name: 'Stephen Curry',
+        fullName: 'Stephen Curry II',
+        aliases: 'Steph, Baby-Faced Assassin, Chef Curry, The Human Torch, Threezus',
+        sport: 'Basketball',
+        team: 'Golden State Warriors',
+        location: 'San Francisco, CA',
+        region: 'San Francisco, CA',
+        state: 'CA',
+        coords: [37.7749, -122.4194],
+        photo: 'assets/players/stephen-curry-card.png',
+        productImage: 'assets/players/stephen-curry-card.png',
+        productName: 'Stephen Curry II G2GOD Player Card',
+        productCta: 'Buy Card',
+        price: '$219.00',
+        bio: 'Position: Point Guard. Shoots: Right. 6-2, 185lb (188cm, 83kg). Team: Golden State Warriors.',
+        stats: {
+          G: '1069',
+          PTS: '24.8',
+          TRB: '4.7',
+          AST: '6.3',
+          'FG%': '47.1',
+          'FG3%': '42.2',
+          'FT%': '91.2',
+          'eFG%': '58.2',
+          PER: '23.4',
+          WS: '147.1'
+        }
       }
     ];
 
@@ -664,7 +703,9 @@
       defaultPlayers.forEach(defaultPlayer => {
         const existingIndex = merged.findIndex(player => player.id === defaultPlayer.id || player.name === defaultPlayer.name);
         if (existingIndex >= 0) {
-          merged[existingIndex] = { ...defaultPlayer, ...merged[existingIndex], stats: merged[existingIndex].stats || defaultPlayer.stats, statsRows: merged[existingIndex].statsRows || defaultPlayer.statsRows };
+          const updatedPlayer = { ...merged[existingIndex], ...defaultPlayer };
+          if (!Object.prototype.hasOwnProperty.call(defaultPlayer, 'statsRows')) delete updatedPlayer.statsRows;
+          merged[existingIndex] = updatedPlayer;
         } else {
           merged.push(defaultPlayer);
         }
@@ -695,7 +736,7 @@
         <div class="panel-body">
           <div class="region-search">
             <p class="panel-label">Search Region</p>
-            <input id="region-search-input" type="search" value="${escapeHtml(query || regionKey)}" placeholder="Philadelphia, PA" autocomplete="off" />
+            <input id="region-search-input" type="text" value="${escapeHtml(query)}" placeholder="Search city or region" autocomplete="off" />
             <div class="region-suggestions">
               ${suggestions.map(region => `<button class="suggestion-btn" data-region="${escapeHtml(region.key)}">${escapeHtml(region.label)} / ${region.count} player${region.count === 1 ? '' : 's'}</button>`).join('')}
             </div>
@@ -717,6 +758,11 @@
       const input = document.getElementById('region-search-input');
       input.addEventListener('input', () => {
         const nextQuery = input.value.trim();
+        if (!nextQuery) {
+          renderRegion(regionKey, activePlayer, '');
+          document.getElementById('region-search-input')?.focus();
+          return;
+        }
         const matches = getRegionMatches(nextQuery);
         if (matches[0]) {
           focusRegion(matches[0].key, { renderOnly: true, query: nextQuery });
@@ -774,7 +820,7 @@
             <p class="product-label">Featured Drop</p>
             <h3>${escapeHtml(player.productName || `${player.name} Jersey`)}</h3>
             <p class="price">${escapeHtml(player.price || '$99.00')}</p>
-            <a href="index.html#collection" class="buy-btn">Buy Jersey</a>
+            <a href="index.html#collection" class="buy-btn">${escapeHtml(player.productCta || 'Buy Jersey')}</a>
           </div>
         </div>
       `;
@@ -1026,20 +1072,26 @@
       hitArea.position.z = 0.015;
       pin.add(hitArea);
 
-      const core = new THREE.Mesh(
-        new THREE.CircleGeometry(0.043, 32),
-        new THREE.MeshBasicMaterial({ color: 0xd71935, side: THREE.DoubleSide })
-      );
-      core.position.z = 0.018;
-      pin.add(core);
-
       const halo = new THREE.Mesh(
-        new THREE.RingGeometry(0.075, 0.095, 48),
-        new THREE.MeshBasicMaterial({ color: 0x7ee8ff, transparent: true, opacity: 0.42, side: THREE.DoubleSide })
+        new THREE.RingGeometry(0.088, 0.105, 56),
+        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.22, side: THREE.DoubleSide })
       );
-      halo.position.z = 0.019;
-      halo.userData.isHalo = true;
+      halo.position.z = 0.017;
       pin.add(halo);
+
+      const ring = new THREE.Mesh(
+        new THREE.RingGeometry(0.045, 0.061, 48),
+        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.88, side: THREE.DoubleSide })
+      );
+      ring.position.z = 0.018;
+      pin.add(ring);
+
+      const core = new THREE.Mesh(
+        new THREE.CircleGeometry(0.018, 32),
+        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.95, side: THREE.DoubleSide })
+      );
+      core.position.z = 0.019;
+      pin.add(core);
 
       return pin;
     }
@@ -1101,13 +1153,6 @@
 
     function animate(time) {
       requestAnimationFrame(animate);
-      pinObjects.forEach(pin => {
-        const halo = pin.children.find(child => child.userData.isHalo);
-        if (halo) {
-          const pulse = 1 + Math.sin(time * 0.0035) * 0.12;
-          halo.scale.set(pulse, pulse, pulse);
-        }
-      });
       controls.update();
       renderer.render(scene, camera);
     }
