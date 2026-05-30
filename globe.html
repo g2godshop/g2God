@@ -1095,6 +1095,7 @@
       pin.position.copy(position);
       pin.lookAt(position.clone().multiplyScalar(2));
       pin.userData.regionKey = region.key;
+      pin.userData.accent = getRegionAccent(region.key);
 
       const hitArea = new THREE.Mesh(
         new THREE.CircleGeometry(0.18, 48),
@@ -1103,37 +1104,36 @@
       hitArea.position.z = 0.015;
       pin.add(hitArea);
 
-      const pulse = new THREE.Sprite(
+      const aura = new THREE.Sprite(
         new THREE.SpriteMaterial({
-          map: makeSignalTexture('pulse'),
+          map: makeSignalTexture(pin.userData.accent),
           transparent: true,
-          opacity: 0.58,
+          opacity: 0.74,
           depthWrite: false
         })
       );
-      pulse.position.z = 0.03;
-      pulse.scale.set(0.19, 0.19, 1);
-      pulse.userData.pulse = 'outer';
-      pin.add(pulse);
-
-      const signal = new THREE.Sprite(
-        new THREE.SpriteMaterial({
-          map: makeSignalTexture('core'),
-          transparent: true,
-          opacity: 0.98,
-          depthWrite: false
-        })
-      );
-      signal.position.z = 0.035;
-      signal.scale.set(0.15, 0.15, 1);
-      signal.userData.pulse = 'inner';
-      pin.add(signal);
+      aura.position.z = 0.035;
+      aura.scale.set(0.2, 0.2, 1);
+      aura.userData.pulse = 'aura';
+      pin.add(aura);
 
       return pin;
     }
 
-    function makeSignalTexture(type) {
-      const size = 256;
+    function getRegionAccent(regionKey) {
+      const accents = [
+        { primary: 'rgba(180,90,255,', secondary: 'rgba(82,209,255,' },
+        { primary: 'rgba(255,203,84,', secondary: 'rgba(255,118,232,' },
+        { primary: 'rgba(75,230,190,', secondary: 'rgba(160,102,255,' },
+        { primary: 'rgba(255,124,88,', secondary: 'rgba(255,223,115,' }
+      ];
+      let hash = 0;
+      String(regionKey).split('').forEach(char => { hash = (hash + char.charCodeAt(0)) % accents.length; });
+      return accents[hash];
+    }
+
+    function makeSignalTexture(accent) {
+      const size = 320;
       const canvas = document.createElement('canvas');
       canvas.width = size;
       canvas.height = size;
@@ -1141,42 +1141,37 @@
       const cx = size / 2;
       const cy = size / 2;
 
-      if (type === 'pulse') {
-        const glow = ctx.createRadialGradient(cx, cy, 8, cx, cy, 104);
-        glow.addColorStop(0, 'rgba(255,255,255,0.2)');
-        glow.addColorStop(0.48, 'rgba(255,255,255,0.08)');
-        glow.addColorStop(1, 'rgba(255,255,255,0)');
-        ctx.fillStyle = glow;
-        ctx.beginPath();
-        ctx.arc(cx, cy, 110, 0, Math.PI * 2);
-        ctx.fill();
+      const glow = ctx.createRadialGradient(cx, cy, 46, cx, cy, 140);
+      glow.addColorStop(0, accent.primary + '0.12)');
+      glow.addColorStop(0.45, accent.secondary + '0.08)');
+      glow.addColorStop(1, accent.secondary + '0)');
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 142, 0, Math.PI * 2);
+      ctx.fill();
 
-        ctx.strokeStyle = 'rgba(255,255,255,0.56)';
-        ctx.lineWidth = 7;
-        ctx.beginPath();
-        ctx.arc(cx, cy, 74, 0, Math.PI * 2);
-        ctx.stroke();
-      } else {
-        const glow = ctx.createRadialGradient(cx, cy, 4, cx, cy, 82);
-        glow.addColorStop(0, 'rgba(255,255,255,0.58)');
-        glow.addColorStop(0.38, 'rgba(255,255,255,0.16)');
-        glow.addColorStop(1, 'rgba(255,255,255,0)');
-        ctx.fillStyle = glow;
-        ctx.beginPath();
-        ctx.arc(cx, cy, 88, 0, Math.PI * 2);
-        ctx.fill();
+      ctx.shadowColor = accent.primary + '0.95)';
+      ctx.shadowBlur = 18;
+      ctx.strokeStyle = accent.primary + '0.58)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 82, 0, Math.PI * 2);
+      ctx.stroke();
 
-        ctx.strokeStyle = 'rgba(255,255,255,0.92)';
-        ctx.lineWidth = 9;
-        ctx.beginPath();
-        ctx.arc(cx, cy, 48, 0, Math.PI * 2);
-        ctx.stroke();
+      ctx.shadowColor = accent.secondary + '0.7)';
+      ctx.shadowBlur = 10;
+      ctx.strokeStyle = accent.secondary + '0.28)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 103, Math.PI * 0.12, Math.PI * 1.72);
+      ctx.stroke();
 
-        ctx.fillStyle = '#d71935';
-        ctx.beginPath();
-        ctx.arc(cx, cy, 26, 0, Math.PI * 2);
-        ctx.fill();
-      }
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 68, Math.PI * 1.15, Math.PI * 1.92);
+      ctx.stroke();
 
       const texture = new THREE.CanvasTexture(canvas);
       texture.anisotropy = 8;
@@ -1242,15 +1237,10 @@
       requestAnimationFrame(animate);
       pinObjects.forEach((pin, index) => {
         pin.children.forEach(child => {
-          if (child.userData.pulse === 'outer') {
-            const phase = (time * 0.0011 + index * 0.36) % 1;
-            const scale = 0.72 + phase * 0.38;
+          if (child.userData.pulse === 'aura') {
+            const scale = 0.2 + Math.sin(time * 0.0019 + index * 0.7) * 0.014;
             child.scale.set(scale, scale, scale);
-            child.material.opacity = 0.32 * (1 - phase);
-          }
-          if (child.userData.pulse === 'inner') {
-            const scale = 0.15 + Math.sin(time * 0.002 + index) * 0.006;
-            child.scale.set(scale, scale, scale);
+            child.material.opacity = 0.58 + Math.sin(time * 0.0019 + index * 0.7) * 0.12;
           }
         });
       });
