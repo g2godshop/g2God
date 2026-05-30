@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>G2GOD · Athlete</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700&family=Barlow:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --white: #ffffff;
+      --black: #000000;
+    }
+
+    body {
+      background: #000;
+      color: #fff;
+      font-family: 'Barlow', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+    }
+
+    /* NAV */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 60px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      letter-spacing: 0.15em;
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .back-link {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      font-size: 0.78rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: color 0.2s;
+    }
+
+    .back-link:hover { color: #fff; }
+    .back-link::before { content: '←'; }
+
+    /* HERO */
+    .athlete-hero {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 70vh;
+    }
+
+    .athlete-photo {
+      background: #111;
+      background-size: cover;
+      background-position: center top;
+      position: relative;
+    }
+
+    .athlete-photo::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to right, transparent 60%, #000 100%);
+    }
+
+    .athlete-photo-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 8rem;
+      color: rgba(255,255,255,0.05);
+    }
+
+    .athlete-info {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 80px 60px;
+    }
+
+    .athlete-cross {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .athlete-eyebrow {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      font-size: 0.72rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 12px;
+    }
+
+    .athlete-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3.5rem, 7vw, 6rem);
+      line-height: 0.95;
+      letter-spacing: 0.02em;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+
+    .athlete-meta {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 40px;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .athlete-meta span { display: flex; align-items: center; gap: 6px; }
+
+    /* TESTIMONY */
+    .testimony-section {
+      padding: 100px 60px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .testimony-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      font-size: 0.7rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.3);
+      margin-bottom: 30px;
+    }
+
+    .testimony-quote {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+      line-height: 1.2;
+      letter-spacing: 0.02em;
+      color: #fff;
+      margin-bottom: 40px;
+    }
+
+    .testimony-quote::before { content: '\201C'; color: rgba(255,255,255,0.15); }
+    .testimony-quote::after  { content: '\201D'; color: rgba(255,255,255,0.15); }
+
+    .testimony-body {
+      font-size: 1.05rem;
+      line-height: 1.9;
+      color: rgba(255,255,255,0.55);
+      white-space: pre-wrap;
+    }
+
+    /* DIVIDER */
+    .divider {
+      width: 40px;
+      height: 1px;
+      background: rgba(255,255,255,0.2);
+      margin: 50px 0;
+    }
+
+    /* JOURNEY SHIRT CTA */
+    .journey-cta {
+      background: #fff;
+      color: #000;
+      padding: 80px 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 40px;
+    }
+
+    .journey-cta-text h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.5rem;
+      letter-spacing: 0.03em;
+      margin-bottom: 8px;
+    }
+
+    .journey-cta-text p {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(0,0,0,0.5);
+    }
+
+    .journey-btn {
+      display: inline-block;
+      background: #000;
+      color: #fff;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 18px 44px;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background 0.2s;
+    }
+
+    .journey-btn:hover { background: #222; }
+
+    /* FOOTER */
+    .page-footer {
+      background: #000;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 30px 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .page-footer p {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      color: rgba(255,255,255,0.2);
+    }
+
+    /* NOT FOUND */
+    .not-found {
+      height: 80vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      text-align: center;
+    }
+
+    .not-found h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3rem;
+      color: rgba(255,255,255,0.2);
+    }
+
+    .not-found a {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+    }
+
+    @media (max-width: 768px) {
+      nav { padding: 20px 24px; }
+      .athlete-hero { grid-template-columns: 1fr; }
+      .athlete-photo { min-height: 50vw; }
+      .athlete-info { padding: 50px 24px; }
+      .testimony-section { padding: 60px 24px; }
+      .journey-cta { flex-direction: column; padding: 50px 24px; }
+      .page-footer { padding: 24px; flex-direction: column; gap: 8px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="index.html" class="nav-logo">G2GOD</a>
+    <a href="index.html#roster" class="back-link">Back to Roster</a>
+  </nav>
+
+  <div id="page-content"></div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const id = parseInt(params.get('id'));
+    const players = JSON.parse(localStorage.getItem('g2god_players') || '[]');
+    const athlete = players.find(p => p.id === id);
+
+    const content = document.getElementById('page-content');
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function safeCssUrl(value) {
+      return String(value).replace(/['")\\]/g, '');
+    }
+
+    if (!athlete) {
+      content.innerHTML = `
+        <div class="not-found">
+          <h2>Athlete Not Found</h2>
+          <a href="index.html#roster">← Return to Roster</a>
+        </div>`;
+    } else {
+      const photoStyle = athlete.photo
+        ? `background-image:url('${safeCssUrl(athlete.photo)}')`
+        : '';
+
+      const photoInner = athlete.photo
+        ? ''
+        : `<div class="athlete-photo-placeholder">✝</div>`;
+
+      const firstSentence = athlete.testimony
+        ? escapeHtml(athlete.testimony.split(/[.!?]/)[0].trim())
+        : 'Competing for an audience of One.';
+
+      content.innerHTML = `
+        <div class="athlete-hero">
+          <div class="athlete-photo" style="${photoStyle}">${photoInner}</div>
+          <div class="athlete-info">
+            <div class="athlete-cross">✝</div>
+            <p class="athlete-eyebrow">G2GOD · Journey Athlete</p>
+            <h1 class="athlete-name">${escapeHtml(athlete.name)}</h1>
+            <div class="athlete-meta">
+              ${athlete.sport ? `<span>Sport: ${escapeHtml(athlete.sport)}</span>` : ''}
+              <span>Location: ${escapeHtml(athlete.location)}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimony-section">
+          <p class="testimony-label">✝ &nbsp; Their Testimony</p>
+          ${athlete.testimony ? `
+            <p class="testimony-quote">${firstSentence}</p>
+            <div class="divider"></div>
+            <p class="testimony-body">${escapeHtml(athlete.testimony)}</p>
+          ` : `<p class="testimony-body" style="color:rgba(255,255,255,0.3);font-style:italic">No testimony added yet.</p>`}
+        </div>
+
+        <div class="journey-cta">
+          <div class="journey-cta-text">
+            <h3>${escapeHtml(athlete.name.split(' ')[0])}'s Journey Shirt</h3>
+            <p>Wear their story. Carry His name.</p>
+          </div>
+          <a href="index.html#collection" class="journey-btn">Shop G2GOD</a>
+        </div>
+
+        <footer class="page-footer">
+          <p>© 2025 G2GOD · Glory to God</p>
+          <p>One Name Above All</p>
+        </footer>
+      `;
+
+      document.title = `G2GOD · ${athlete.name}`;
+    }
+  </script>
+</body>
+</html>

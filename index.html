@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>G2GOD — Glory to God</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700&family=Barlow:wght@300;400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --gold: #ffffff;
+      --white: #ffffff;
+      --black: #000000;
+      --gray: #999999;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: #000;
+      color: var(--white);
+      font-family: 'Barlow', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* ── SLIDESHOW ── */
+    .slideshow {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      filter: grayscale(1) contrast(1.08) brightness(0.82);
+      transition: opacity 1.8s ease-in-out;
+    }
+
+    .slide.active { opacity: 1; }
+
+    .slide::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.55) 0%,
+        rgba(0,0,0,0.25) 40%,
+        rgba(0,0,0,0.65) 100%
+      );
+    }
+
+    .slide-1  { background-image: url('assets/home/swim-lanes.png'); }
+    .slide-2  { background-image: url('assets/home/basketball-spotlight.png'); }
+    .slide-3  { background-image: url('assets/home/field-fog.png'); }
+    .slide-4  { background-image: url('assets/home/baseball-diamond.png'); }
+    .slide-5  { background-image: url('assets/home/track-one.png'); }
+    .slide-6  { background-image: url('assets/home/soccer-corner.png'); }
+    .slide-7  { background-image: url('assets/home/arena-wrestling.png'); }
+    .slide-8  { background-image: url('assets/home/swim-lanes.png'); }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 60px;
+    }
+
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 0.15em;
+      color: var(--white);
+      text-decoration: none;
+    }
+
+    .nav-logo span { color: var(--gold); }
+
+    .nav-links {
+      display: flex;
+      gap: 40px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--white);
+      text-decoration: none;
+      opacity: 0.85;
+      transition: opacity 0.2s;
+    }
+
+    .nav-links a:hover { opacity: 1; }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      z-index: 10;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 0 60px;
+    }
+
+    .hero-cross {
+      font-size: 2.2rem;
+      color: var(--white);
+      opacity: 0.9;
+      margin-bottom: 18px;
+      letter-spacing: 0;
+    }
+
+    .hero-eyebrow {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      font-size: 0.75rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 16px;
+    }
+
+    .hero-headline {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(5rem, 12vw, 11rem);
+      line-height: 0.92;
+      letter-spacing: 0.02em;
+      color: var(--white);
+      text-transform: uppercase;
+    }
+
+    .hero-headline .accent { color: var(--gold); }
+
+    .hero-sub {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      font-size: clamp(1rem, 2vw, 1.4rem);
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.7);
+      margin-top: 20px;
+      max-width: 500px;
+    }
+
+    .hero-cta {
+      margin-top: 40px;
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-primary {
+      display: inline-block;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--black);
+      background: var(--white);
+      padding: 16px 40px;
+      text-decoration: none;
+      transition: background 0.25s, color 0.25s;
+    }
+
+    .btn-primary:hover {
+      background: var(--gold);
+      color: var(--black);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--white);
+      text-decoration: none;
+      opacity: 0.75;
+      transition: opacity 0.2s;
+    }
+
+    .btn-secondary::after {
+      content: '→';
+      font-size: 1rem;
+    }
+
+    .btn-secondary:hover { opacity: 1; }
+
+    /* ── SCROLL INDICATOR ── */
+    .scroll-indicator {
+      position: fixed;
+      bottom: 36px;
+      right: 60px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .scroll-indicator span {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      writing-mode: vertical-rl;
+    }
+
+    .scroll-line {
+      width: 1px;
+      height: 60px;
+      background: rgba(255,255,255,0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .scroll-line::after {
+      content: '';
+      position: absolute;
+      top: -100%;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--gold);
+      animation: scrollDown 2s ease-in-out infinite;
+    }
+
+    @keyframes scrollDown {
+      0%   { top: -100%; }
+      100% { top: 100%; }
+    }
+
+    /* ── SLIDE DOTS ── */
+    .slide-dots {
+      position: fixed;
+      left: 60px;
+      bottom: 40px;
+      z-index: 100;
+      display: flex;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 20px;
+      height: 2px;
+      background: rgba(255,255,255,0.3);
+      cursor: pointer;
+      transition: background 0.3s, width 0.3s;
+    }
+
+    .dot.active {
+      background: var(--gold);
+      width: 40px;
+    }
+
+    /* ── STATEMENT SECTION ── */
+    .statement {
+      position: relative;
+      z-index: 10;
+      background-image: url('assets/home/arena-wrestling.png');
+      background-attachment: fixed;
+      background-size: cover;
+      background-position: center;
+      padding: 120px 60px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .statement::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+    }
+
+    .statement > * { position: relative; z-index: 1; }
+
+    .statement-left {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem, 6vw, 5.5rem);
+      line-height: 1;
+      letter-spacing: 0.03em;
+      color: var(--white);
+    }
+
+    .statement-left .line-gold { color: var(--gold); }
+
+    .statement-right {
+      border-left: 1px solid rgba(255,255,255,0.15);
+      padding-left: 60px;
+    }
+
+    .statement-right p {
+      font-size: 1.05rem;
+      line-height: 1.8;
+      color: rgba(255,255,255,0.65);
+      margin-bottom: 24px;
+    }
+
+    .statement-right p strong {
+      color: var(--white);
+      font-weight: 400;
+    }
+
+    /* ── PILLARS ── */
+    .pillars {
+      position: relative;
+      z-index: 10;
+      background-image: url('assets/home/field-fog.png');
+      background-attachment: fixed;
+      background-size: cover;
+      background-position: center;
+      padding: 100px 60px;
+    }
+
+    .pillars::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.80);
+    }
+
+    .pillars > * { position: relative; z-index: 1; }
+
+    .pillars-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      font-size: 0.7rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 60px;
+    }
+
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: rgba(255,255,255,0.08);
+    }
+
+    .pillar {
+      background: #0a0a0a;
+      padding: 60px 40px;
+      transition: background 0.3s;
+    }
+
+    .pillar:hover { background: #111; }
+
+    .pillar-number {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 4rem;
+      color: rgba(255,255,255,0.1);
+      line-height: 1;
+      margin-bottom: 20px;
+    }
+
+    .pillar h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      letter-spacing: 0.05em;
+      color: var(--white);
+      margin-bottom: 16px;
+    }
+
+    .pillar p {
+      font-size: 0.9rem;
+      line-height: 1.7;
+      color: rgba(255,255,255,0.5);
+    }
+
+    /* ── VERSE BANNER ── */
+    .verse-banner {
+      position: relative;
+      z-index: 10;
+      background: var(--gold);
+      padding: 60px;
+      text-align: center;
+    }
+
+    .verse-text {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      letter-spacing: 0.05em;
+      color: var(--black);
+      margin-bottom: 12px;
+    }
+
+    .verse-ref {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      font-size: 0.75rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: rgba(0,0,0,0.55);
+    }
+
+    /* ── COLLECTION TEASER ── */
+    .collection {
+      position: relative;
+      z-index: 10;
+      background-image: url('assets/home/basketball-spotlight.png');
+      background-attachment: fixed;
+      background-size: cover;
+      background-position: center;
+      padding: 100px 60px;
+    }
+
+    .collection::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.82);
+    }
+
+    .collection > * { position: relative; z-index: 1; }
+
+    .collection-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 60px;
+    }
+
+    .collection-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      letter-spacing: 0.03em;
+    }
+
+    .collection-link {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: gap 0.2s;
+    }
+
+    .collection-link:hover { gap: 16px; }
+    .collection-link::after { content: '→'; }
+
+    .limited-drop {
+      display: grid;
+      grid-template-columns: minmax(280px, 0.95fr) minmax(280px, 1.05fr);
+      gap: 0;
+      min-height: 520px;
+      margin-bottom: 34px;
+      border: 1px solid rgba(255,255,255,0.24);
+      background:
+        radial-gradient(circle at 82% 18%, rgba(255,255,255,0.18), transparent 18%),
+        linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02) 36%, rgba(0,0,0,0.92));
+      box-shadow: 0 0 42px rgba(255,255,255,0.12);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .limited-drop::before {
+      content: 'LIMITED EDITION';
+      position: absolute;
+      top: 20px;
+      right: -62px;
+      z-index: 3;
+      width: 260px;
+      padding: 9px 0;
+      background: var(--white);
+      color: var(--black);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.28em;
+      text-align: center;
+      transform: rotate(38deg);
+    }
+
+    .limited-copy {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: clamp(34px, 5vw, 70px);
+      border-right: 1px solid rgba(255,255,255,0.14);
+    }
+
+    .limited-kicker {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.72);
+      margin-bottom: 18px;
+    }
+
+    .limited-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3.5rem, 8vw, 8rem);
+      line-height: 0.86;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      text-shadow: 0 0 24px rgba(255,255,255,0.2);
+    }
+
+    .limited-text {
+      max-width: 420px;
+      color: rgba(255,255,255,0.62);
+      font-size: 1rem;
+      line-height: 1.8;
+      margin-bottom: 30px;
+    }
+
+    .limited-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 34px;
+    }
+
+    .limited-meta span {
+      border: 1px solid rgba(255,255,255,0.26);
+      padding: 8px 12px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.78);
+    }
+
+    .limited-btn {
+      align-self: flex-start;
+      background: var(--white);
+      color: var(--black);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 17px 34px;
+    }
+
+    .limited-art {
+      min-height: 460px;
+      background:
+        linear-gradient(90deg, rgba(0,0,0,0.18), rgba(0,0,0,0.62)),
+        url('assets/home/limited-card.png');
+      background-size: cover;
+      background-position: center;
+      position: relative;
+    }
+
+    .limited-art::after {
+      content: '';
+      position: absolute;
+      inset: 18px;
+      border: 1px solid rgba(255,255,255,0.18);
+      pointer-events: none;
+    }
+
+    .collection-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+    }
+
+    .product-card {
+      background:
+        radial-gradient(circle at 50% 28%, rgba(255,255,255,0.16), transparent 9%),
+        radial-gradient(circle at 50% 36%, rgba(255,255,255,0.08), transparent 18%),
+        linear-gradient(135deg, #161616 0%, #050505 100%);
+      background-size: cover;
+      background-position: center;
+      aspect-ratio: 3/4;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 28px;
+      cursor: pointer;
+      transition: transform 0.4s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .product-card:nth-child(2) {
+      background:
+        radial-gradient(circle at 50% 27%, rgba(255,255,255,0.2), transparent 8%),
+        radial-gradient(circle at 52% 36%, rgba(255,255,255,0.1), transparent 17%),
+        linear-gradient(145deg, #111 0%, #050505 52%, #171717 100%);
+    }
+
+    .product-card:nth-child(3) {
+      background:
+        radial-gradient(circle at 50% 29%, rgba(255,255,255,0.18), transparent 8%),
+        repeating-linear-gradient(90deg, transparent 0 7px, rgba(255,255,255,0.08) 8px 9px),
+        linear-gradient(140deg, #111 0%, #050505 100%);
+    }
+
+    .product-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 60%);
+      transition: background 0.3s;
+    }
+
+    .product-card:hover { transform: scale(1.02); }
+    .product-card:hover::before { background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.2) 60%); }
+
+    .product-card-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+
+    .product-card-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 0.05em;
+      color: var(--white);
+    }
+
+    .product-card-price {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 300;
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.5);
+      margin-top: 6px;
+    }
+
+    .product-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 5rem;
+      color: rgba(255,255,255,0.04);
+      letter-spacing: 0.1em;
+      z-index: 0;
+    }
+
+    .product-card > *:not(.product-placeholder) { position: relative; z-index: 1; }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative;
+      z-index: 10;
+      background-image: url('assets/home/baseball-diamond.png');
+      background-attachment: fixed;
+      background-size: cover;
+      background-position: center top;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding: 60px;
+    }
+
+    footer::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+    }
+
+    footer > * { position: relative; z-index: 1; }
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 40px;
+      align-items: start;
+    }
+
+    .footer-brand .nav-logo {
+      display: block;
+      margin-bottom: 16px;
+    }
+
+    .footer-brand p {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.4);
+      line-height: 1.7;
+      max-width: 260px;
+    }
+
+    .footer-col h4 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      font-size: 0.7rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 20px;
+    }
+
+    .footer-col ul { list-style: none; }
+
+    .footer-col ul li {
+      margin-bottom: 10px;
+    }
+
+    .footer-col ul li a {
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.45);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-col ul li a:hover { color: var(--white); }
+
+    .footer-bottom {
+      position: relative;
+      z-index: 10;
+      background: #000;
+      padding: 20px 60px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-bottom p {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      color: rgba(255,255,255,0.25);
+    }
+
+    /* ── ROSTER MAP ── */
+    .roster-section {
+      position: relative;
+      z-index: 10;
+      background: #000;
+      padding: 100px 60px;
+    }
+
+    .roster-header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    .roster-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      font-size: 0.7rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 14px;
+    }
+
+    .roster-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      letter-spacing: 0.03em;
+      color: var(--white);
+      margin-bottom: 14px;
+    }
+
+    .roster-sub {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1rem;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.4);
+    }
+
+    #map {
+      width: 100%;
+      height: 500px;
+      border: 1px solid rgba(255,255,255,0.08);
+      filter: grayscale(100%) brightness(0.9) contrast(1.1);
+    }
+
+    .roster-add {
+      display: flex;
+      gap: 12px;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .roster-input {
+      flex: 1;
+      min-width: 200px;
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.15);
+      color: var(--white);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.1em;
+      padding: 14px 20px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .roster-input::placeholder { color: rgba(255,255,255,0.3); }
+    .roster-input:focus { border-color: rgba(255,255,255,0.5); }
+
+    .roster-btn {
+      background: var(--white);
+      color: var(--black);
+      border: none;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 14px 32px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .roster-btn:hover { background: #ddd; }
+
+    .roster-list {
+      margin-top: 30px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .roster-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 8px 16px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.75);
+    }
+
+    .roster-chip span { color: rgba(255,255,255,0.3); font-size: 0.75rem; }
+
+    .roster-chip button {
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.25);
+      cursor: pointer;
+      font-size: 0.9rem;
+      padding: 0;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+
+    .roster-chip button:hover { color: var(--white); }
+
+    .roster-form {
+      margin-top: 40px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding-top: 40px;
+    }
+
+    .roster-form-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      font-size: 0.75rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 20px;
+    }
+
+    .roster-textarea {
+      width: 100%;
+      min-height: 120px;
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.15);
+      color: var(--white);
+      font-family: 'Barlow', sans-serif;
+      font-size: 0.9rem;
+      line-height: 1.7;
+      padding: 14px 20px;
+      outline: none;
+      resize: vertical;
+      margin-top: 12px;
+      transition: border-color 0.2s;
+    }
+
+    .roster-textarea::placeholder { color: rgba(255,255,255,0.3); }
+    .roster-textarea:focus { border-color: rgba(255,255,255,0.5); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      nav { padding: 24px 30px; }
+      .nav-links { display: none; }
+      .hero { padding: 0 30px 70px; }
+      .statement { grid-template-columns: 1fr; gap: 40px; padding: 80px 30px; }
+      .statement-right { border-left: none; padding-left: 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 40px; }
+      .pillars { padding: 80px 30px; }
+      .pillars-grid { grid-template-columns: 1fr; }
+      .collection { padding: 80px 30px; }
+      .collection-header { align-items: flex-start; flex-direction: column; gap: 14px; margin-bottom: 36px; }
+      .limited-drop { grid-template-columns: 1fr; min-height: 0; }
+      .limited-drop::before { right: -78px; }
+      .limited-copy { border-right: 0; border-bottom: 1px solid rgba(255,255,255,0.14); }
+      .limited-art { min-height: 420px; }
+      .collection-grid { grid-template-columns: 1fr 1fr; }
+      .verse-banner { padding: 40px 30px; }
+      footer { grid-template-columns: 1fr; padding: 50px 30px; }
+      .footer-bottom { padding: 20px 30px; flex-direction: column; gap: 8px; text-align: center; }
+      .slide-dots { left: 30px; }
+      .scroll-indicator { right: 30px; }
+    }
+
+    @media (max-width: 620px) {
+      .limited-art { min-height: 300px; }
+      .collection-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SLIDESHOW -->
+  <div class="slideshow" id="slideshow">
+    <div class="slide slide-1 active"></div>
+    <div class="slide slide-2"></div>
+    <div class="slide slide-3"></div>
+    <div class="slide slide-4"></div>
+    <div class="slide slide-5"></div>
+    <div class="slide slide-6"></div>
+    <div class="slide slide-7"></div>
+    <div class="slide slide-8"></div>
+  </div>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="nav-logo">G2<span>GOD</span></a>
+    <ul class="nav-links">
+      <li><a href="#collection">Shop</a></li>
+      <li><a href="globe.html">Player Globe</a></li>
+      <li><a href="#about">Our Mission</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- SLIDE DOTS -->
+  <div class="slide-dots" id="slideDots"></div>
+
+  <!-- SCROLL INDICATOR -->
+  <div class="scroll-indicator">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-cross">✝</div>
+    <p class="hero-eyebrow">Glory to God · Christian Apparel</p>
+    <h1 class="hero-headline">
+      One Name<br><span class="accent">Above All</span>
+    </h1>
+    <p class="hero-sub">Wear your faith.<br>Carry His name into every arena.</p>
+    <div class="hero-cta">
+      <a href="#collection" class="btn-primary">Shop the Collection</a>
+      <a href="#about" class="btn-secondary">Our Mission</a>
+    </div>
+  </section>
+
+  <!-- COLLECTION -->
+  <section class="collection" id="collection">
+    <div class="collection-header">
+      <h2 class="collection-title">The Collection</h2>
+      <a href="#" class="collection-link">View All</a>
+    </div>
+    <article class="limited-drop">
+      <div class="limited-copy">
+        <p class="limited-kicker">Limited Edition Drop</p>
+        <h3 class="limited-title">Player Testimonial Card</h3>
+        <p class="limited-text">A collector-style faith card built for athletes who carry His name into every arena. Serialized look, scripture detail, and G2GOD iridescent finish.</p>
+        <div class="limited-meta">
+          <span>Limited Run</span>
+          <span>Premium Card Stock</span>
+          <span>Coming Soon</span>
+        </div>
+        <a href="#contact" class="limited-btn">Reserve Interest</a>
+      </div>
+      <div class="limited-art" aria-label="Limited edition G2GOD player testimonial card"></div>
+    </article>
+    <div class="collection-grid">
+      <div class="product-card">
+        <div class="product-placeholder">SEEK</div>
+        <p class="product-card-label">G2GOD Collection</p>
+        <p class="product-card-name">Seek Hoodie</p>
+        <p class="product-card-price">Coming Soon</p>
+      </div>
+      <div class="product-card">
+        <div class="product-placeholder">SAVED</div>
+        <p class="product-card-label">G2GOD Collection</p>
+        <p class="product-card-name">Saved Hoodie</p>
+        <p class="product-card-price">Coming Soon</p>
+      </div>
+      <div class="product-card">
+        <div class="product-placeholder">CHOSEN</div>
+        <p class="product-card-label">G2GOD Collection</p>
+        <p class="product-card-name">Chosen Hoodie</p>
+        <p class="product-card-price">Coming Soon</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATEMENT -->
+  <section class="statement" id="about">
+    <div class="statement-left">
+      Built for<br>
+      <span class="line-gold">Champions</span><br>
+      Worn for<br>
+      His Glory
+    </div>
+    <div class="statement-right">
+      <p>
+        <strong>G2GOD is more than a brand.</strong> It's a declaration. Every time you step onto the field, the court, the mat, the track — you carry a name greater than any scoreboard can hold.
+      </p>
+      <p>
+        We create apparel for athletes and believers who understand that talent is borrowed, victory is fleeting, and <strong>only one name endures forever.</strong>
+      </p>
+      <p>
+        This is performance gear with purpose. Faith-forward. Championship-minded.
+      </p>
+    </div>
+  </section>
+
+  <!-- PILLARS -->
+  <section class="pillars">
+    <p class="pillars-label">What We Stand For</p>
+    <div class="pillars-grid">
+      <div class="pillar">
+        <div class="pillar-number">01</div>
+        <h3>Faith First</h3>
+        <p>Before the whistle blows and after the final buzzer, we acknowledge the source of every gift we've been given.</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-number">02</div>
+        <h3>Relentless</h3>
+        <p>Discipline, sacrifice, and perseverance are not just athletic virtues — they are biblical ones. We wear them.</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-number">03</div>
+        <h3>His Glory</h3>
+        <p>Whether you win or lose, every rep, every game, every moment is an offering. Compete like it matters — because it does.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- VERSE BANNER -->
+  <div class="verse-banner">
+    <p class="verse-text">"Whatever you do, do it all for the glory of God."</p>
+    <p class="verse-ref">1 Corinthians 10:31</p>
+  </div>
+
+  <!-- ROSTER MAP -->
+  <section class="roster-section" id="roster">
+    <div class="roster-header">
+      <p class="roster-label">G2GOD · Journey Roster</p>
+      <h2 class="roster-title">Where We Compete</h2>
+      <p class="roster-sub">Every pin is an athlete. Click to hear their story.</p>
+      <a href="globe.html" class="btn-secondary" style="margin-top:20px;">Open the 3D Player Globe</a>
+    </div>
+    <div id="map"></div>
+
+    <!-- ADD ATHLETE FORM -->
+    <div class="roster-form">
+      <p class="roster-form-title">✝ Add an Athlete</p>
+      <div class="roster-add">
+        <input type="text" id="player-name" placeholder="Full Name" class="roster-input" />
+        <input type="text" id="player-sport" placeholder="Sport" class="roster-input" />
+        <input type="text" id="player-location" placeholder="City, State (e.g. Atlanta, GA)" class="roster-input" />
+      </div>
+      <textarea id="player-testimony" class="roster-textarea" placeholder="Their testimony — what does faith mean to their journey as an athlete?"></textarea>
+      <input type="text" id="player-photo" placeholder="Photo URL (optional)" class="roster-input" style="width:100%;margin-top:12px;" />
+      <button onclick="addPin()" class="roster-btn" style="margin-top:16px;">+ Add to Roster</button>
+    </div>
+
+    <div class="roster-list" id="roster-list"></div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer id="contact">
+    <div class="footer-brand">
+      <a href="#" class="nav-logo">G2<span>GOD</span></a>
+      <p>Christian apparel built for athletes who compete for an audience of One.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Shop</h4>
+      <ul>
+        <li><a href="#">New Arrivals</a></li>
+        <li><a href="#">Tees & Tops</a></li>
+        <li><a href="#">Hoodies</a></li>
+        <li><a href="#">Accessories</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="#">Our Mission</a></li>
+        <li><a href="#">Contact Us</a></li>
+        <li><a href="#">Instagram</a></li>
+        <li><a href="#">G2GOD.com</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <div class="footer-bottom">
+    <p>© 2025 G2GOD. All rights reserved.</p>
+    <p>Glory to God · One Name Above All</p>
+  </div>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const dotsContainer = document.getElementById('slideDots');
+    let current = 0;
+    let timer;
+
+    // Build dots
+    slides.forEach((_, i) => {
+      const dot = document.createElement('div');
+      dot.className = 'dot' + (i === 0 ? ' active' : '');
+      dot.addEventListener('click', () => goTo(i));
+      dotsContainer.appendChild(dot);
+    });
+
+    const dots = document.querySelectorAll('.dot');
+
+    function goTo(index) {
+      slides[current].classList.remove('active');
+      dots[current].classList.remove('active');
+      current = index;
+      slides[current].classList.add('active');
+      dots[current].classList.add('active');
+      resetTimer();
+    }
+
+    function next() {
+      goTo((current + 1) % slides.length);
+    }
+
+    function resetTimer() {
+      clearInterval(timer);
+      timer = setInterval(next, 6000);
+    }
+
+    resetTimer();
+  </script>
+
+  <script>
+    // ── MAP ──
+    const map = L.map('map', {
+      center: [39.5, -98.35],
+      zoom: 4,
+      minZoom: 3,
+      maxZoom: 10,
+      zoomControl: true,
+      scrollWheelZoom: false
+    });
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+      attribution: '© OpenStreetMap © CARTO',
+      subdomains: 'abcd',
+      maxZoom: 19
+    }).addTo(map);
+
+    // White US state outlines
+    fetch('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json')
+      .then(r => r.json())
+      .then(data => {
+        L.geoJSON(data, {
+          style: {
+            color: 'rgba(255,255,255,0.35)',
+            weight: 1,
+            fillColor: 'transparent',
+            fillOpacity: 0
+          }
+        }).addTo(map);
+      });
+
+    function makePinIcon(name) {
+      const initials = name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+      return L.divIcon({
+        className: '',
+        html: `<div style="
+          display:flex;align-items:center;justify-content:center;
+          width:28px;height:28px;
+          background:#fff;
+          border-radius:50%;
+          border:2px solid rgba(255,255,255,0.5);
+          box-shadow:0 0 12px rgba(255,255,255,0.4);
+          font-family:sans-serif;font-size:9px;font-weight:700;
+          color:#000;cursor:pointer;
+        ">${initials}</div>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14]
+      });
+    }
+
+    const defaultPlayers = [
+      {
+        id: 760301,
+        name: 'Allen Iverson',
+        fullName: 'Allen Ezail Iverson',
+        aliases: 'The Answer, A.I., Bubba Chuck, Jewelz, The Third Degree',
+        sport: 'Basketball',
+        team: 'Philadelphia 76ers',
+        location: 'Philadelphia, PA',
+        region: 'Philadelphia, PA',
+        state: 'PA',
+        coords: [39.9526, -75.1652],
+        photo: 'assets/players/allen-iverson.webp',
+        productImage: 'assets/players/allen-iverson-jersey.webp',
+        productName: 'Allen Iverson Philadelphia 76ers White Jersey',
+        price: '$99.00',
+        testimony: 'A test profile for the G2GOD player globe.',
+        bio: 'Position: Shooting Guard and Point Guard. Shoots: Right. 6-0, 165lb (183cm, 74kg). Born: June 7, 1975 in Hampton, Virginia.',
+        stats: {
+          G: '914',
+          PTS: '26.7',
+          TRB: '3.7',
+          AST: '6.2',
+          'FG%': '42.5',
+          'FG3%': '31.3',
+          'FT%': '78.0',
+          'eFG%': '45.2',
+          PER: '20.9',
+          WS: '99.0'
+        }
+      },
+      {
+        id: 760321,
+        name: 'Joel Embiid',
+        fullName: 'Joel Hans Embiid',
+        aliases: 'JoJo, The Process, Do-a-180, Troel, The Phantom of the Process, Big Fella',
+        sport: 'Basketball',
+        team: 'Philadelphia 76ers',
+        location: 'Philadelphia, PA',
+        region: 'Philadelphia, PA',
+        state: 'PA',
+        coords: [39.9526, -75.1652],
+        photo: 'assets/players/joel-embiid.avif',
+        productImage: 'assets/players/joel-embiid-jersey.png',
+        productName: 'Joel Embiid Philadelphia 76ers Black Jersey',
+        price: '$89.00',
+        testimony: 'A test profile for the G2GOD player globe.',
+        bio: 'Position: Center. Shoots: Right. 7-0, 280lb (213cm, 127kg). Team: Philadelphia 76ers.',
+        statsRows: [
+          { summary: '2025-26', G: '38', PTS: '26.9', TRB: '7.7', AST: '3.9', 'FG%': '48.9', 'FG3%': '33.3', 'FT%': '85.4', 'eFG%': '52.7', PER: '24.7', WS: '4.1' },
+          { summary: 'Career', G: '490', PTS: '27.6', TRB: '10.8', AST: '3.7', 'FG%': '50.0', 'FG3%': '33.9', 'FT%': '83.0', 'eFG%': '53.3', PER: '28.0', WS: '69.0' }
+        ]
+      }
+    ];
+
+    function getPlayers() {
+      const saved = JSON.parse(localStorage.getItem('g2god_players') || '[]');
+      const merged = [...saved];
+      defaultPlayers.forEach(defaultPlayer => {
+        const existingIndex = merged.findIndex(player => player.id === defaultPlayer.id || player.name === defaultPlayer.name);
+        if (existingIndex >= 0) {
+          merged[existingIndex] = { ...defaultPlayer, ...merged[existingIndex], stats: merged[existingIndex].stats || defaultPlayer.stats, statsRows: merged[existingIndex].statsRows || defaultPlayer.statsRows };
+        } else {
+          merged.push(defaultPlayer);
+        }
+      });
+      localStorage.setItem('g2god_players', JSON.stringify(merged));
+      return merged;
+    }
+
+    let players = getPlayers();
+    let markers = {};
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    async function geocode(location) {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location + ', USA')}&format=json&limit=1`);
+      const data = await res.json();
+      if (data.length) return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+      return null;
+    }
+
+    function placeMarker(player) {
+      const marker = L.marker(player.coords, { icon: makePinIcon(player.name) }).addTo(map);
+      marker.on('click', () => {
+        window.location.href = `athlete.html?id=${player.id}`;
+      });
+      marker.bindTooltip(`<b>${escapeHtml(player.name)}</b><br>${escapeHtml(player.location)}`, {
+        direction: 'top', offset: [0, -16],
+        className: 'map-tooltip'
+      });
+      markers[player.id] = marker;
+    }
+
+    function saveAndRender() {
+      localStorage.setItem('g2god_players', JSON.stringify(players));
+      renderList();
+    }
+
+    async function addPin() {
+      const name      = document.getElementById('player-name').value.trim();
+      const sport     = document.getElementById('player-sport').value.trim();
+      const location  = document.getElementById('player-location').value.trim();
+      const testimony = document.getElementById('player-testimony').value.trim();
+      const photo     = document.getElementById('player-photo').value.trim();
+      if (!name || !location) { alert('Name and location are required.'); return; }
+
+      const btn = document.querySelector('.roster-btn');
+      btn.textContent = 'Locating...';
+      btn.disabled = true;
+
+      try {
+        const coords = await geocode(location);
+        if (!coords) {
+          alert('Location not found. Try "City, ST" format.');
+          return;
+        }
+
+        const player = { id: Date.now(), name, sport, location, testimony, photo, coords };
+        players.push(player);
+        placeMarker(player);
+        saveAndRender();
+
+        map.flyTo(coords, 6, { duration: 1.5 });
+        ['player-name','player-sport','player-location','player-testimony','player-photo']
+          .forEach(id => document.getElementById(id).value = '');
+      } catch (error) {
+        alert('Unable to locate that athlete right now.');
+      } finally {
+        btn.textContent = '+ Add to Roster';
+        btn.disabled = false;
+      }
+    }
+
+    function removePin(id) {
+      if (markers[id]) { map.removeLayer(markers[id]); delete markers[id]; }
+      players = players.filter(p => p.id !== id);
+      saveAndRender();
+    }
+
+    function renderList() {
+      const list = document.getElementById('roster-list');
+      list.innerHTML = players.map(p => `
+        <div class="roster-chip" onclick="window.location.href='athlete.html?id=${p.id}'" style="cursor:pointer">
+          ✝ ${escapeHtml(p.name)} <span>${p.sport ? escapeHtml(p.sport) + ' · ' : ''}${escapeHtml(p.location)}</span>
+          <button onclick="event.stopPropagation();removePin(${p.id})">✕</button>
+        </div>
+      `).join('');
+    }
+
+    // Load saved players on startup
+    players.forEach(placeMarker);
+    renderList();
+  </script>
+</body>
+</html>

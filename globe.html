@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>G2GOD - Player Globe</title>
+  <link rel="icon" href="data:," />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700&family=Barlow:wght@300;400;600&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --white: #ffffff;
+      --black: #000000;
+      --ink: rgba(255,255,255,0.72);
+      --line: rgba(255,255,255,0.14);
+      --glow: rgba(90, 220, 255, 0.72);
+      --hot: rgba(255, 255, 255, 0.96);
+      --red: #d71935;
+    }
+
+    html, body {
+      min-height: 100%;
+      background: #000;
+      color: var(--white);
+      font-family: 'Barlow', sans-serif;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 25% 18%, rgba(0, 180, 255, 0.2), transparent 30%),
+        radial-gradient(circle at 86% 72%, rgba(215, 25, 53, 0.18), transparent 28%),
+        linear-gradient(180deg, rgba(255,255,255,0.05), transparent 34%, rgba(255,255,255,0.04));
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.18;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
+      background-size: 72px 72px;
+      mask-image: linear-gradient(to bottom, transparent, #000 16%, #000 74%, transparent);
+      z-index: 0;
+    }
+
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 26px 56px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.86), rgba(0,0,0,0));
+    }
+
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 0.15em;
+      color: var(--white);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 34px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.78);
+      text-decoration: none;
+    }
+
+    .nav-links a:hover,
+    .nav-links .active { color: #fff; }
+
+    main {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.72fr);
+      align-items: stretch;
+      padding: 104px 44px 36px;
+      gap: 28px;
+    }
+
+    .globe-stage {
+      position: relative;
+      min-height: calc(100vh - 140px);
+      border: 1px solid var(--line);
+      background: rgba(0,0,0,0.38);
+      overflow: hidden;
+    }
+
+    .globe-stage::before {
+      content: '';
+      position: absolute;
+      inset: 22px;
+      border: 1px solid rgba(255,255,255,0.1);
+      pointer-events: none;
+    }
+
+    #globe-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .hud {
+      position: absolute;
+      left: 28px;
+      top: 26px;
+      max-width: 430px;
+      pointer-events: none;
+    }
+
+    .kicker,
+    .panel-label,
+    .stat-label,
+    .product-label,
+    .status-item {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+
+    .kicker {
+      color: rgba(255,255,255,0.58);
+      font-size: 0.76rem;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(4.4rem, 9vw, 8rem);
+      line-height: 0.86;
+      letter-spacing: 0.02em;
+      max-width: 620px;
+    }
+
+    .hud p {
+      max-width: 360px;
+      margin-top: 18px;
+      color: rgba(255,255,255,0.62);
+      line-height: 1.7;
+      font-size: 0.98rem;
+    }
+
+    .scanline {
+      position: absolute;
+      left: 0; right: 0;
+      top: 48%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+      box-shadow: 0 0 24px rgba(80, 210, 255, 0.45);
+      animation: scan 4s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes scan {
+      0%, 100% { transform: translateY(-160px); opacity: 0.15; }
+      50% { transform: translateY(160px); opacity: 0.85; }
+    }
+
+    .status-rack {
+      position: absolute;
+      left: 28px;
+      bottom: 28px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(88px, 1fr));
+      gap: 10px;
+      width: min(440px, calc(100% - 56px));
+    }
+
+    .status-item {
+      border: 1px solid rgba(255,255,255,0.12);
+      padding: 12px 14px;
+      background: rgba(0,0,0,0.42);
+      font-size: 0.68rem;
+      color: rgba(255,255,255,0.44);
+    }
+
+    .status-item strong {
+      display: block;
+      margin-top: 6px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.55rem;
+      letter-spacing: 0.04em;
+      color: #fff;
+    }
+
+    .player-panel {
+      position: relative;
+      align-self: center;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: linear-gradient(180deg, rgba(12,16,20,0.86), rgba(0,0,0,0.88));
+      box-shadow: 0 24px 70px rgba(0,0,0,0.45);
+      min-height: 680px;
+    }
+
+    .player-panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border-top: 2px solid rgba(255,255,255,0.35);
+      box-shadow: inset 0 0 50px rgba(68, 205, 255, 0.08);
+    }
+
+    .portrait {
+      min-height: 260px;
+      background-size: cover;
+      background-position: center top;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      filter: grayscale(0.15) contrast(1.05);
+      position: relative;
+    }
+
+    .portrait::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.82), transparent 56%);
+    }
+
+    .panel-body {
+      position: relative;
+      padding: 24px;
+    }
+
+    .region-search {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .region-search input {
+      width: 100%;
+      min-height: 46px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.055);
+      color: #fff;
+      padding: 0 14px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      font-size: 0.88rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      outline: none;
+    }
+
+    .region-search input:focus { border-color: rgba(255,255,255,0.42); }
+
+    .region-suggestions,
+    .player-results {
+      display: grid;
+      gap: 8px;
+    }
+
+    .suggestion-btn,
+    .player-result {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      color: #fff;
+      text-align: left;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .suggestion-btn {
+      min-height: 38px;
+      padding: 0 12px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.7);
+    }
+
+    .suggestion-btn:hover,
+    .player-result:hover,
+    .player-result.active {
+      border-color: rgba(255,255,255,0.36);
+      background: rgba(255,255,255,0.085);
+    }
+
+    .player-results {
+      margin: 16px 0 22px;
+    }
+
+    .player-result {
+      display: grid;
+      grid-template-columns: 54px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 10px;
+    }
+
+    .player-result img {
+      width: 54px;
+      height: 54px;
+      object-fit: cover;
+      background: #111;
+    }
+
+    .player-result strong {
+      display: block;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.45rem;
+      letter-spacing: 0.03em;
+      line-height: 1;
+    }
+
+    .player-result span {
+      display: block;
+      margin-top: 4px;
+      color: rgba(255,255,255,0.45);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .player-result em {
+      color: rgba(255,255,255,0.46);
+      font-style: normal;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-size: 0.68rem;
+    }
+
+    .panel-label {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.45);
+      margin-bottom: 10px;
+    }
+
+    .player-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3.1rem, 5vw, 4.8rem);
+      line-height: 0.9;
+      letter-spacing: 0.02em;
+      overflow-wrap: anywhere;
+    }
+
+    .aliases {
+      margin-top: 8px;
+      color: rgba(255,255,255,0.56);
+      line-height: 1.55;
+    }
+
+    .bio {
+      margin-top: 18px;
+      color: rgba(255,255,255,0.68);
+      line-height: 1.7;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-top: 22px;
+    }
+
+    .stat {
+      min-height: 70px;
+      border: 1px solid rgba(255,255,255,0.11);
+      background: rgba(255,255,255,0.04);
+      padding: 10px 8px;
+    }
+
+    .stat-label {
+      display: block;
+      color: rgba(255,255,255,0.38);
+      font-size: 0.63rem;
+      margin-bottom: 7px;
+    }
+
+    .stat-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.65rem;
+      letter-spacing: 0.03em;
+    }
+
+    .stats-table {
+      width: 100%;
+      margin-top: 22px;
+      border-collapse: collapse;
+      color: #fff;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      font-size: 0.82rem;
+      letter-spacing: 0.05em;
+    }
+
+    .stats-table th,
+    .stats-table td {
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      padding: 8px 6px;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .stats-table th:first-child,
+    .stats-table td:first-child {
+      text-align: left;
+      color: rgba(255,255,255,0.62);
+    }
+
+    .stats-table th {
+      color: rgba(255,255,255,0.42);
+      text-transform: uppercase;
+      font-size: 0.66rem;
+      letter-spacing: 0.16em;
+    }
+
+    .product {
+      display: grid;
+      grid-template-columns: 112px 1fr;
+      gap: 18px;
+      align-items: center;
+      margin-top: 24px;
+      padding: 16px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: #fff;
+      color: #000;
+    }
+
+    .product img {
+      width: 112px;
+      height: 112px;
+      object-fit: contain;
+    }
+
+    .product-label {
+      color: rgba(0,0,0,0.45);
+      font-size: 0.66rem;
+      margin-bottom: 5px;
+    }
+
+    .product h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      line-height: 1;
+      letter-spacing: 0.03em;
+      overflow-wrap: anywhere;
+    }
+
+    .price {
+      margin: 10px 0 14px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: 0.08em;
+    }
+
+    .buy-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 0 18px;
+      background: #000;
+      color: #fff;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 0.78rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      text-decoration: none;
+    }
+
+    .region-list {
+      margin-top: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .region-pill {
+      border: 1px solid rgba(255,255,255,0.14);
+      padding: 8px 10px;
+      color: rgba(255,255,255,0.58);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-size: 0.7rem;
+      background: rgba(255,255,255,0.04);
+    }
+
+    .region-pill.active {
+      color: #000;
+      background: #fff;
+    }
+
+    @media (max-width: 1020px) {
+      nav { padding: 22px 26px; }
+      .nav-links { gap: 18px; }
+      main {
+        grid-template-columns: 1fr;
+        padding: 92px 20px 28px;
+      }
+      .globe-stage { min-height: 620px; }
+      .player-panel { min-height: 0; }
+    }
+
+    @media (max-width: 680px) {
+      .nav-links { display: none; }
+      .globe-stage { min-height: 560px; }
+      .hud { left: 20px; right: 20px; top: 22px; }
+      h1 { font-size: 4rem; }
+      .status-rack { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .stats-table { display: block; max-width: 100%; overflow-x: auto; }
+      .player-result { grid-template-columns: 46px 1fr; }
+      .player-result em { display: none; }
+      .product { grid-template-columns: 1fr; }
+      .product img { width: 100%; height: 150px; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="nav-logo">G2GOD</a>
+    <ul class="nav-links">
+      <li><a href="index.html#collection">Shop</a></li>
+      <li><a class="active" href="globe.html">Player Globe</a></li>
+      <li><a href="index.html#about">Our Mission</a></li>
+      <li><a href="index.html#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <section class="globe-stage" aria-label="Interactive player globe">
+      <canvas id="globe-canvas"></canvas>
+      <div class="hud">
+        <p class="kicker">G2GOD Player Signal</p>
+        <h1>Player Globe</h1>
+        <p>Regions with active athletes pulse on the globe. Select a signal to bring up the player profile and featured gear.</p>
+      </div>
+      <div class="scanline"></div>
+      <div class="status-rack">
+        <div class="status-item">Active Players<strong id="active-count">1</strong></div>
+        <div class="status-item">Regions Online<strong id="region-count">1</strong></div>
+        <div class="status-item">Selected Signal<strong id="selected-region">PA</strong></div>
+      </div>
+    </section>
+
+    <aside class="player-panel" id="player-panel"></aside>
+  </main>
+
+  <script>
+    const defaultPlayers = [
+      {
+        id: 760301,
+        name: 'Allen Iverson',
+        fullName: 'Allen Ezail Iverson',
+        aliases: 'The Answer, A.I., Bubba Chuck, Jewelz, The Third Degree',
+        sport: 'Basketball',
+        team: 'Philadelphia 76ers',
+        location: 'Philadelphia, PA',
+        region: 'Philadelphia, PA',
+        state: 'PA',
+        coords: [39.9526, -75.1652],
+        photo: 'assets/players/allen-iverson.webp',
+        productImage: 'assets/players/allen-iverson-jersey.webp',
+        productName: 'Allen Iverson Philadelphia 76ers White Jersey',
+        price: '$99.00',
+        bio: 'Position: Shooting Guard and Point Guard. Shoots: Right. 6-0, 165lb (183cm, 74kg). Born: June 7, 1975 in Hampton, Virginia.',
+        stats: {
+          G: '914',
+          PTS: '26.7',
+          TRB: '3.7',
+          AST: '6.2',
+          'FG%': '42.5',
+          'FG3%': '31.3',
+          'FT%': '78.0',
+          'eFG%': '45.2',
+          PER: '20.9',
+          WS: '99.0'
+        }
+      },
+      {
+        id: 760321,
+        name: 'Joel Embiid',
+        fullName: 'Joel Hans Embiid',
+        aliases: 'JoJo, The Process, Do-a-180, Troel, The Phantom of the Process, Big Fella',
+        sport: 'Basketball',
+        team: 'Philadelphia 76ers',
+        location: 'Philadelphia, PA',
+        region: 'Philadelphia, PA',
+        state: 'PA',
+        coords: [39.9526, -75.1652],
+        photo: 'assets/players/joel-embiid.avif',
+        productImage: 'assets/players/joel-embiid-jersey.png',
+        productName: 'Joel Embiid Philadelphia 76ers Black Jersey',
+        price: '$89.00',
+        bio: 'Position: Center. Shoots: Right. 7-0, 280lb (213cm, 127kg). Team: Philadelphia 76ers.',
+        statsRows: [
+          { summary: '2025-26', G: '38', PTS: '26.9', TRB: '7.7', AST: '3.9', 'FG%': '48.9', 'FG3%': '33.3', 'FT%': '85.4', 'eFG%': '52.7', PER: '24.7', WS: '4.1' },
+          { summary: 'Career', G: '490', PTS: '27.6', TRB: '10.8', AST: '3.7', 'FG%': '50.0', 'FG3%': '33.9', 'FT%': '83.0', 'eFG%': '53.3', PER: '28.0', WS: '69.0' }
+        ]
+      }
+    ];
+
+    const stateCenters = {
+      PA: [40.8781, -77.7996],
+      CA: [36.7783, -119.4179],
+      NY: [43.0000, -75.0000],
+      TX: [31.0000, -100.0000],
+      FL: [27.6648, -81.5158],
+      GA: [32.1656, -82.9001],
+      IL: [40.6331, -89.3985],
+      OH: [40.4173, -82.9071],
+      NC: [35.7596, -79.0193],
+      VA: [37.4316, -78.6569]
+    };
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function getPlayers() {
+      const saved = JSON.parse(localStorage.getItem('g2god_players') || '[]');
+      const merged = [...saved];
+      defaultPlayers.forEach(defaultPlayer => {
+        const existingIndex = merged.findIndex(player => player.id === defaultPlayer.id || player.name === defaultPlayer.name);
+        if (existingIndex >= 0) {
+          merged[existingIndex] = { ...defaultPlayer, ...merged[existingIndex], stats: merged[existingIndex].stats || defaultPlayer.stats, statsRows: merged[existingIndex].statsRows || defaultPlayer.statsRows };
+        } else {
+          merged.push(defaultPlayer);
+        }
+      });
+      localStorage.setItem('g2god_players', JSON.stringify(merged));
+      return merged;
+    }
+
+    const players = getPlayers();
+    let selectedPlayer = players.find(player => player.id === 760301) || players[0];
+    let selectedRegionKey = getRegionKey(selectedPlayer);
+
+    const panel = document.getElementById('player-panel');
+    const activeCount = document.getElementById('active-count');
+    const regionCount = document.getElementById('region-count');
+    const selectedRegion = document.getElementById('selected-region');
+
+    function renderRegion(regionKey, player = null, query = '') {
+      selectedRegionKey = regionKey;
+      const regionPlayers = getPlayersForRegion(regionKey);
+      selectedPlayer = player || regionPlayers[0] || selectedPlayer;
+      selectedRegion.textContent = regionKey;
+      const suggestions = getRegionMatches(query);
+      const activePlayer = selectedPlayer;
+      const detail = activePlayer ? renderPlayerDetail(activePlayer) : '<p class="bio">No players available in this region yet.</p>';
+
+      panel.innerHTML = `
+        <div class="panel-body">
+          <div class="region-search">
+            <p class="panel-label">Search Region</p>
+            <input id="region-search-input" type="search" value="${escapeHtml(query || regionKey)}" placeholder="Philadelphia, PA" autocomplete="off" />
+            <div class="region-suggestions">
+              ${suggestions.map(region => `<button class="suggestion-btn" data-region="${escapeHtml(region.key)}">${escapeHtml(region.label)} / ${region.count} player${region.count === 1 ? '' : 's'}</button>`).join('')}
+            </div>
+          </div>
+          <p class="panel-label">${escapeHtml(regionKey)} / Available Players</p>
+          <div class="player-results">
+            ${regionPlayers.map(regionPlayer => `
+              <button class="player-result ${regionPlayer.id === activePlayer?.id ? 'active' : ''}" data-player-id="${regionPlayer.id}">
+                <img src="${escapeHtml(regionPlayer.photo || '')}" alt="${escapeHtml(regionPlayer.name)}" />
+                <span><strong>${escapeHtml(regionPlayer.name)}</strong><span>${escapeHtml(regionPlayer.team || regionPlayer.sport || 'Journey Athlete')}</span></span>
+                <em>View</em>
+              </button>
+            `).join('')}
+          </div>
+          ${detail}
+        </div>
+      `;
+
+      const input = document.getElementById('region-search-input');
+      input.addEventListener('input', () => {
+        const nextQuery = input.value.trim();
+        const matches = getRegionMatches(nextQuery);
+        if (matches[0]) {
+          focusRegion(matches[0].key, { renderOnly: true, query: nextQuery });
+        } else {
+          renderRegion(regionKey, activePlayer, nextQuery);
+          document.getElementById('region-search-input')?.focus();
+        }
+      });
+      input.addEventListener('keydown', event => {
+        if (event.key === 'Enter') {
+          const match = getRegionMatches(input.value.trim())[0];
+          if (match) focusRegion(match.key);
+        }
+      });
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+
+      panel.querySelectorAll('.suggestion-btn').forEach(button => {
+        button.addEventListener('click', () => focusRegion(button.dataset.region));
+      });
+
+      panel.querySelectorAll('.player-result').forEach(button => {
+        button.addEventListener('click', () => {
+          const next = players.find(p => String(p.id) === button.dataset.playerId);
+          if (next) focusPlayer(next);
+        });
+      });
+    }
+
+    function renderPlayerDetail(player) {
+      const stats = player.stats || {};
+      const statEntries = Object.entries(stats).length
+        ? Object.entries(stats)
+        : [['Sport', player.sport || 'Athlete'], ['Team', player.team || 'G2GOD']];
+
+      return `
+        <div class="portrait" style="background-image:url('${escapeHtml(player.photo || '')}')"></div>
+        <p class="panel-label">${escapeHtml(player.team || 'Journey Athlete')} / ${escapeHtml(player.location || 'Unknown')}</p>
+        <h2 class="player-name">${escapeHtml(player.fullName || player.name)}</h2>
+        ${player.aliases ? `<p class="aliases">(${escapeHtml(player.aliases)})</p>` : ''}
+        <p class="bio">${escapeHtml(player.bio || 'Competing for an audience of One.')}</p>
+        ${player.statsRows ? renderStatsTable(player.statsRows) : `
+          <div class="stats-grid">
+            ${statEntries.map(([label, value]) => `
+              <div class="stat">
+                <span class="stat-label">${escapeHtml(label)}</span>
+                <span class="stat-value">${escapeHtml(value)}</span>
+              </div>
+            `).join('')}
+          </div>
+        `}
+        <div class="product">
+          <img src="${escapeHtml(player.productImage || 'assets/players/allen-iverson-jersey.webp')}" alt="${escapeHtml(player.productName || 'Player jersey')}" />
+          <div>
+            <p class="product-label">Featured Drop</p>
+            <h3>${escapeHtml(player.productName || `${player.name} Jersey`)}</h3>
+            <p class="price">${escapeHtml(player.price || '$99.00')}</p>
+            <a href="index.html#collection" class="buy-btn">Buy Jersey</a>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderStatsTable(rows) {
+      const columns = ['summary', 'G', 'PTS', 'TRB', 'AST', 'FG%', 'FG3%', 'FT%', 'eFG%', 'PER', 'WS'];
+      return `
+        <table class="stats-table">
+          <thead><tr>${columns.map(column => `<th>${escapeHtml(column === 'summary' ? 'Summary' : column)}</th>`).join('')}</tr></thead>
+          <tbody>
+            ${rows.map(row => `<tr>${columns.map(column => `<td>${escapeHtml(row[column] || '')}</td>`).join('')}</tr>`).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function regionFromLocation(location) {
+      const match = String(location || '').match(/,\s*([A-Z]{2})\b/);
+      return match ? match[1] : 'US';
+    }
+
+    function getRegions() {
+      return [...new Set(players.map(getRegionKey))].filter(Boolean).sort();
+    }
+
+    function getRegionKey(player) {
+      return player.region || player.location || player.state || regionFromLocation(player.location);
+    }
+
+    function getPlayersForRegion(regionKey) {
+      return players.filter(player => getRegionKey(player).toLowerCase() === String(regionKey).toLowerCase());
+    }
+
+    function getRegionMatches(query) {
+      const normalized = String(query || '').trim().toLowerCase();
+      return getRegions()
+        .map(region => ({ key: region, label: region, count: getPlayersForRegion(region).length }))
+        .filter(region => !normalized || region.label.toLowerCase().includes(normalized) || region.label.toLowerCase().replace(',', '').includes(normalized));
+    }
+
+    activeCount.textContent = players.length;
+    regionCount.textContent = getRegions().length;
+
+    const canvas = document.getElementById('globe-canvas');
+    const stage = canvas.parentElement;
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(46, 1, 0.1, 1000);
+    camera.position.set(0, 0, 4.7);
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.enablePan = false;
+    controls.minDistance = 3.1;
+    controls.maxDistance = 7;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.55;
+
+    const globeGroup = new THREE.Group();
+    scene.add(globeGroup);
+
+    const globeTexture = makeGlobeTexture();
+    globeTexture.anisotropy = 8;
+    const globe = new THREE.Mesh(
+      new THREE.SphereGeometry(1.55, 96, 96),
+      new THREE.MeshStandardMaterial({
+        map: globeTexture,
+        color: 0xffffff,
+        roughness: 0.88,
+        metalness: 0.12,
+        emissive: new THREE.Color(0x07111a),
+        emissiveIntensity: 0.42
+      })
+    );
+    globeGroup.add(globe);
+
+    const wire = new THREE.Mesh(
+      new THREE.SphereGeometry(1.565, 48, 48),
+      new THREE.MeshBasicMaterial({
+        color: 0x6de7ff,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.08
+      })
+    );
+    globeGroup.add(wire);
+
+    const atmosphere = new THREE.Mesh(
+      new THREE.SphereGeometry(1.72, 96, 96),
+      new THREE.MeshBasicMaterial({
+        color: 0x7be8ff,
+        transparent: true,
+        opacity: 0.1,
+        side: THREE.BackSide
+      })
+    );
+    globeGroup.add(atmosphere);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.85));
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.65);
+    keyLight.position.set(4, 2, 5);
+    scene.add(keyLight);
+    const rimLight = new THREE.DirectionalLight(0x68dfff, 1.1);
+    rimLight.position.set(-5, -1, -2);
+    scene.add(rimLight);
+
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    const pinObjects = [];
+
+    getRegionMarkers().forEach(region => {
+      const pin = makeRegionPin(region);
+      pinObjects.push(pin);
+      globeGroup.add(pin);
+    });
+
+    function getRegionMarkers() {
+      return getRegions().map(regionKey => {
+        const regionPlayers = getPlayersForRegion(regionKey);
+        const firstPlayer = regionPlayers[0];
+        return {
+          key: regionKey,
+          players: regionPlayers,
+          coords: firstPlayer?.coords || stateCenters[firstPlayer?.state] || stateCenters[regionFromLocation(regionKey)]
+        };
+      }).filter(region => region.coords);
+    }
+
+    function makeGlobeTexture() {
+      const textureCanvas = document.createElement('canvas');
+      textureCanvas.width = 2048;
+      textureCanvas.height = 1024;
+      const ctx = textureCanvas.getContext('2d');
+      const texture = new THREE.CanvasTexture(textureCanvas);
+      texture.anisotropy = 8;
+
+      drawMinimalEarthBase(ctx, textureCanvas.width, textureCanvas.height);
+
+      Promise.all([
+        fetch('assets/globe/countries.geojson').then(response => response.json()),
+        fetch('assets/globe/us-states.geojson').then(response => response.json())
+      ]).then(([countries, states]) => {
+        drawMinimalEarthBase(ctx, textureCanvas.width, textureCanvas.height);
+        drawGeoJson(ctx, countries, {
+          width: textureCanvas.width,
+          height: textureCanvas.height,
+          fill: 'rgba(255,255,255,0.035)',
+          stroke: 'rgba(255,255,255,0.42)',
+          lineWidth: 1.35
+        });
+        drawGeoJson(ctx, states, {
+          width: textureCanvas.width,
+          height: textureCanvas.height,
+          fill: 'transparent',
+          stroke: 'rgba(255,255,255,0.34)',
+          lineWidth: 0.9
+        });
+        texture.needsUpdate = true;
+      }).catch(() => {
+        texture.needsUpdate = true;
+      });
+
+      return texture;
+    }
+
+    function drawMinimalEarthBase(ctx, width, height) {
+      const ocean = ctx.createLinearGradient(0, 0, width, height);
+      ocean.addColorStop(0, '#050707');
+      ocean.addColorStop(0.55, '#000000');
+      ocean.addColorStop(1, '#080a0a');
+      ctx.fillStyle = ocean;
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x <= width; x += 170) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+      }
+      for (let y = 0; y <= height; y += 128) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
+    }
+
+    function drawGeoJson(ctx, geojson, options) {
+      ctx.save();
+      ctx.fillStyle = options.fill;
+      ctx.strokeStyle = options.stroke;
+      ctx.lineWidth = options.lineWidth;
+      geojson.features.forEach(feature => drawGeometry(ctx, feature.geometry, options));
+      ctx.restore();
+    }
+
+    function drawGeometry(ctx, geometry, options) {
+      if (!geometry) return;
+      if (geometry.type === 'Polygon') {
+        drawPolygon(ctx, geometry.coordinates, options);
+      }
+      if (geometry.type === 'MultiPolygon') {
+        geometry.coordinates.forEach(polygon => drawPolygon(ctx, polygon, options));
+      }
+    }
+
+    function drawPolygon(ctx, rings, options) {
+      rings.forEach((ring, ringIndex) => {
+        ctx.beginPath();
+        ring.forEach(([lon, lat], pointIndex) => {
+          const x = (lon + 180) / 360 * options.width;
+          const y = (90 - lat) / 180 * options.height;
+          if (pointIndex === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        ctx.closePath();
+        if (ringIndex === 0 && options.fill !== 'transparent') ctx.fill();
+        ctx.stroke();
+      });
+    }
+
+    function latLonToVector(lat, lon, radius = 1.62) {
+      const phi = (90 - lat) * Math.PI / 180;
+      const theta = (lon + 180) * Math.PI / 180;
+      return new THREE.Vector3(
+        -radius * Math.sin(phi) * Math.cos(theta),
+        radius * Math.cos(phi),
+        radius * Math.sin(phi) * Math.sin(theta)
+      );
+    }
+
+    function makeRegionPin(region) {
+      const pin = new THREE.Group();
+      const [lat, lon] = region.coords;
+      const position = latLonToVector(lat, lon, 1.66);
+      pin.position.copy(position);
+      pin.lookAt(position.clone().multiplyScalar(2));
+      pin.userData.regionKey = region.key;
+
+      const hitArea = new THREE.Mesh(
+        new THREE.CircleGeometry(0.16, 48),
+        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, side: THREE.DoubleSide })
+      );
+      hitArea.position.z = 0.015;
+      pin.add(hitArea);
+
+      const core = new THREE.Mesh(
+        new THREE.CircleGeometry(0.043, 32),
+        new THREE.MeshBasicMaterial({ color: 0xd71935, side: THREE.DoubleSide })
+      );
+      core.position.z = 0.018;
+      pin.add(core);
+
+      const halo = new THREE.Mesh(
+        new THREE.RingGeometry(0.075, 0.095, 48),
+        new THREE.MeshBasicMaterial({ color: 0x7ee8ff, transparent: true, opacity: 0.42, side: THREE.DoubleSide })
+      );
+      halo.position.z = 0.019;
+      halo.userData.isHalo = true;
+      pin.add(halo);
+
+      return pin;
+    }
+
+    function focusPlayer(player) {
+      focusRegion(getRegionKey(player), { player });
+    }
+
+    function focusRegion(regionKey, options = {}) {
+      const regionPlayers = getPlayersForRegion(regionKey);
+      const player = options.player || regionPlayers[0];
+      const coords = player?.coords || stateCenters[player?.state] || stateCenters[regionFromLocation(regionKey)];
+      renderRegion(regionKey, player, options.query || regionKey);
+      if (options.renderOnly || !coords) return;
+      controls.autoRotate = false;
+      const [lat, lon] = coords;
+      const target = latLonToVector(lat, lon, 4.4);
+      animateCameraTo(target);
+    }
+
+    function animateCameraTo(target) {
+      const start = camera.position.clone();
+      const startTime = performance.now();
+      const duration = 900;
+      function tick(now) {
+        const progress = Math.min((now - startTime) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        camera.position.lerpVectors(start, target, eased);
+        camera.lookAt(0, 0, 0);
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    canvas.addEventListener('pointerdown', event => {
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(pointer, camera);
+      const hits = raycaster.intersectObjects(pinObjects, true);
+      if (!hits.length) return;
+      let node = hits[0].object;
+      while (node && !node.userData.regionKey) node = node.parent;
+      if (node && node.userData.regionKey) focusRegion(node.userData.regionKey);
+    });
+
+    function resize() {
+      const rect = stage.getBoundingClientRect();
+      camera.aspect = rect.width / rect.height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(rect.width, rect.height, false);
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    renderRegion(selectedRegionKey, selectedPlayer, selectedRegionKey);
+    setTimeout(() => focusRegion(selectedRegionKey, { player: selectedPlayer }), 650);
+
+    function animate(time) {
+      requestAnimationFrame(animate);
+      pinObjects.forEach(pin => {
+        const halo = pin.children.find(child => child.userData.isHalo);
+        if (halo) {
+          const pulse = 1 + Math.sin(time * 0.0035) * 0.12;
+          halo.scale.set(pulse, pulse, pulse);
+        }
+      });
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    animate(0);
+  </script>
+</body>
+</html>
