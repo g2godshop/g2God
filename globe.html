@@ -557,7 +557,7 @@
   <nav>
     <a href="index.html" class="nav-logo">G2GOD</a>
     <ul class="nav-links">
-      <li><a href="index.html#collection">Shop</a></li>
+      <li><a href="shop.html">Shop</a></li>
       <li><a class="active" href="globe.html">Player Globe</a></li>
       <li><a href="index.html#about">Our Mission</a></li>
       <li><a href="index.html#contact">Contact</a></li>
@@ -827,7 +827,7 @@
             <p class="product-label">Featured Drop</p>
             <h3>${escapeHtml(player.productName || `${player.name} Jersey`)}</h3>
             <p class="price">${escapeHtml(player.price || '$99.00')}</p>
-            <a href="index.html#collection" class="buy-btn">${escapeHtml(player.productCta || 'Buy Jersey')}</a>
+            <a href="shop.html#products" class="buy-btn">${escapeHtml(player.productCta || 'Buy Jersey')}</a>
           </div>
         </div>
       `;
@@ -903,7 +903,7 @@
     camera.position.set(0, 0, 4.7);
 
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2.5));
 
     const controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
@@ -911,7 +911,7 @@
     controls.minDistance = 3.1;
     controls.maxDistance = 7;
     controls.autoRotate = true;
-    controls.autoRotateSpeed = 0.55;
+    controls.autoRotateSpeed = 0.32;
 
     const globeGroup = new THREE.Group();
     scene.add(globeGroup);
@@ -919,14 +919,14 @@
     const globeTexture = makeGlobeTexture();
     globeTexture.anisotropy = 8;
     const globe = new THREE.Mesh(
-      new THREE.SphereGeometry(1.55, 96, 96),
+      new THREE.SphereGeometry(1.55, 128, 128),
       new THREE.MeshStandardMaterial({
         map: globeTexture,
         color: 0xffffff,
-        roughness: 0.88,
-        metalness: 0.12,
-        emissive: new THREE.Color(0x07111a),
-        emissiveIntensity: 0.42
+        roughness: 0.92,
+        metalness: 0.05,
+        emissive: new THREE.Color(0x05090b),
+        emissiveIntensity: 0.28
       })
     );
     globeGroup.add(globe);
@@ -934,10 +934,10 @@
     const wire = new THREE.Mesh(
       new THREE.SphereGeometry(1.565, 48, 48),
       new THREE.MeshBasicMaterial({
-        color: 0x6de7ff,
+        color: 0x8ae8ff,
         wireframe: true,
         transparent: true,
-        opacity: 0.08
+        opacity: 0.032
       })
     );
     globeGroup.add(wire);
@@ -947,7 +947,7 @@
       new THREE.MeshBasicMaterial({
         color: 0x7be8ff,
         transparent: true,
-        opacity: 0.1,
+        opacity: 0.055,
         side: THREE.BackSide
       })
     );
@@ -985,8 +985,8 @@
 
     function makeGlobeTexture() {
       const textureCanvas = document.createElement('canvas');
-      textureCanvas.width = 2048;
-      textureCanvas.height = 1024;
+      textureCanvas.width = 4096;
+      textureCanvas.height = 2048;
       const ctx = textureCanvas.getContext('2d');
       const texture = new THREE.CanvasTexture(textureCanvas);
       texture.anisotropy = 8;
@@ -1001,16 +1001,16 @@
         drawGeoJson(ctx, countries, {
           width: textureCanvas.width,
           height: textureCanvas.height,
-          fill: 'rgba(255,255,255,0.035)',
-          stroke: 'rgba(255,255,255,0.42)',
-          lineWidth: 1.35
+          fill: 'rgba(255,255,255,0.018)',
+          stroke: 'rgba(255,255,255,0.34)',
+          lineWidth: 1.65
         });
         drawGeoJson(ctx, states, {
           width: textureCanvas.width,
           height: textureCanvas.height,
           fill: 'transparent',
-          stroke: 'rgba(255,255,255,0.34)',
-          lineWidth: 0.9
+          stroke: 'rgba(255,255,255,0.22)',
+          lineWidth: 1.05
         });
         texture.needsUpdate = true;
       }).catch(() => {
@@ -1028,15 +1028,15 @@
       ctx.fillStyle = ocean;
       ctx.fillRect(0, 0, width, height);
 
-      ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+      ctx.strokeStyle = 'rgba(255,255,255,0.035)';
       ctx.lineWidth = 1;
-      for (let x = 0; x <= width; x += 170) {
+      for (let x = 0; x <= width; x += 512) {
         ctx.beginPath();
         ctx.moveTo(x, 0);
         ctx.lineTo(x, height);
         ctx.stroke();
       }
-      for (let y = 0; y <= height; y += 128) {
+      for (let y = 0; y <= height; y += 384) {
         ctx.beginPath();
         ctx.moveTo(0, y);
         ctx.lineTo(width, y);
@@ -1091,42 +1091,96 @@
     function makeRegionPin(region) {
       const pin = new THREE.Group();
       const [lat, lon] = region.coords;
-      const position = latLonToVector(lat, lon, 1.66);
+      const position = latLonToVector(lat, lon, 1.675);
       pin.position.copy(position);
       pin.lookAt(position.clone().multiplyScalar(2));
       pin.userData.regionKey = region.key;
 
       const hitArea = new THREE.Mesh(
-        new THREE.CircleGeometry(0.16, 48),
+        new THREE.CircleGeometry(0.18, 48),
         new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, side: THREE.DoubleSide })
       );
       hitArea.position.z = 0.015;
       pin.add(hitArea);
 
-      const halo = new THREE.Mesh(
-        new THREE.RingGeometry(0.106, 0.113, 72),
-        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.16, side: THREE.DoubleSide })
+      const pulse = new THREE.Sprite(
+        new THREE.SpriteMaterial({
+          map: makeSignalTexture('pulse'),
+          transparent: true,
+          opacity: 0.58,
+          depthWrite: false
+        })
       );
-      halo.position.z = 0.017;
-      halo.userData.pulse = 'outer';
-      pin.add(halo);
+      pulse.position.z = 0.03;
+      pulse.scale.set(0.19, 0.19, 1);
+      pulse.userData.pulse = 'outer';
+      pin.add(pulse);
 
-      const ring = new THREE.Mesh(
-        new THREE.RingGeometry(0.056, 0.068, 64),
-        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.72, side: THREE.DoubleSide })
+      const signal = new THREE.Sprite(
+        new THREE.SpriteMaterial({
+          map: makeSignalTexture('core'),
+          transparent: true,
+          opacity: 0.98,
+          depthWrite: false
+        })
       );
-      ring.position.z = 0.018;
-      ring.userData.pulse = 'inner';
-      pin.add(ring);
-
-      const core = new THREE.Mesh(
-        new THREE.CircleGeometry(0.026, 40),
-        new THREE.MeshBasicMaterial({ color: 0xd71935, transparent: true, opacity: 0.96, side: THREE.DoubleSide })
-      );
-      core.position.z = 0.019;
-      pin.add(core);
+      signal.position.z = 0.035;
+      signal.scale.set(0.15, 0.15, 1);
+      signal.userData.pulse = 'inner';
+      pin.add(signal);
 
       return pin;
+    }
+
+    function makeSignalTexture(type) {
+      const size = 256;
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const cx = size / 2;
+      const cy = size / 2;
+
+      if (type === 'pulse') {
+        const glow = ctx.createRadialGradient(cx, cy, 8, cx, cy, 104);
+        glow.addColorStop(0, 'rgba(255,255,255,0.2)');
+        glow.addColorStop(0.48, 'rgba(255,255,255,0.08)');
+        glow.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 110, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = 'rgba(255,255,255,0.56)';
+        ctx.lineWidth = 7;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 74, 0, Math.PI * 2);
+        ctx.stroke();
+      } else {
+        const glow = ctx.createRadialGradient(cx, cy, 4, cx, cy, 82);
+        glow.addColorStop(0, 'rgba(255,255,255,0.58)');
+        glow.addColorStop(0.38, 'rgba(255,255,255,0.16)');
+        glow.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 88, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = 'rgba(255,255,255,0.92)';
+        ctx.lineWidth = 9;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 48, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.fillStyle = '#d71935';
+        ctx.beginPath();
+        ctx.arc(cx, cy, 26, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.anisotropy = 8;
+      return texture;
     }
 
     function focusPlayer(player) {
@@ -1189,13 +1243,13 @@
       pinObjects.forEach((pin, index) => {
         pin.children.forEach(child => {
           if (child.userData.pulse === 'outer') {
-            const phase = (time * 0.0014 + index * 0.35) % 1;
-            const scale = 0.92 + phase * 0.46;
+            const phase = (time * 0.0011 + index * 0.36) % 1;
+            const scale = 0.72 + phase * 0.38;
             child.scale.set(scale, scale, scale);
-            child.material.opacity = 0.22 * (1 - phase);
+            child.material.opacity = 0.32 * (1 - phase);
           }
           if (child.userData.pulse === 'inner') {
-            const scale = 1 + Math.sin(time * 0.0024 + index) * 0.045;
+            const scale = 0.15 + Math.sin(time * 0.002 + index) * 0.006;
             child.scale.set(scale, scale, scale);
           }
         });
