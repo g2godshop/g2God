@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>G2GOD - Shop</title>
+  <link rel="icon" href="data:," />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700&family=Barlow:wght@300;400;600&display=swap" rel="stylesheet" />
@@ -80,6 +81,31 @@
 
     .nav-links a:hover,
     .nav-links .active { color: #fff; opacity: 1; }
+
+    .menu-toggle {
+      display: none;
+      width: 44px;
+      height: 44px;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 6px;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: rgba(0,0,0,0.48);
+      color: var(--white);
+      cursor: pointer;
+    }
+
+    .menu-toggle span {
+      width: 20px;
+      height: 2px;
+      background: currentColor;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+
+    nav.menu-open .menu-toggle span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+    nav.menu-open .menu-toggle span:nth-child(2) { opacity: 0; }
+    nav.menu-open .menu-toggle span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
 
     main {
       position: relative;
@@ -614,7 +640,24 @@
 
     @media (max-width: 680px) {
       nav { position: absolute; padding: 22px 24px; }
-      .nav-links { display: none; }
+      .menu-toggle { display: inline-flex; }
+      .nav-links {
+        display: none;
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 24px;
+        left: 24px;
+        flex-direction: column;
+        gap: 0;
+        padding: 14px;
+        background: rgba(0,0,0,0.94);
+        border: 1px solid rgba(255,255,255,0.16);
+      }
+      nav.menu-open .nav-links { display: flex; }
+      .nav-links a {
+        display: block;
+        padding: 14px 6px;
+      }
       .shop-hero { width: 100vw; padding: 128px 24px 42px; min-height: auto; overflow: hidden; }
       .shop-hero > * { max-width: min(320px, calc(100vw - 48px)); }
       h1 { font-size: 3.8rem; }
@@ -648,13 +691,18 @@
 </head>
 <body>
   <nav>
-    <a href="index.html" class="nav-logo">G2<span>GOD</span></a>
+    <a href="/" class="nav-logo">G2<span>GOD</span></a>
     <ul class="nav-links">
-      <li><a class="active" href="shop.html">Shop</a></li>
-      <li><a href="globe.html">Player Globe</a></li>
-      <li><a href="index.html#about">Our Mission</a></li>
+      <li><a class="active" href="/shop">Shop</a></li>
+      <li><a href="/globe">Player Globe</a></li>
+      <li><a href="/#about">Our Mission</a></li>
       <li><a href="#contact">Contact</a></li>
     </ul>
+    <button class="menu-toggle" type="button" aria-label="Open navigation menu" aria-expanded="false">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </button>
   </nav>
 
   <main>
@@ -693,7 +741,7 @@
             <span>Premium Card Stock</span>
             <span>Coming Soon</span>
           </div>
-          <a href="#notify" class="featured-btn">Reserve Interest</a>
+          <a href="/product" class="featured-btn">View Product</a>
         </div>
         <div class="featured-art" aria-label="Limited edition G2GOD player testimonial card"></div>
       </article>
@@ -758,7 +806,7 @@
             <h3 class="product-name">Testimonial Card</h3>
             <div class="product-row">
               <p class="product-price">Limited Drop</p>
-              <a class="product-btn" href="#notify">Reserve</a>
+              <a class="product-btn" href="/product">View</a>
             </div>
           </div>
         </article>
@@ -836,13 +884,13 @@
         <h2>Get Notified When The Next Drop Opens</h2>
         <p>Reserve interest now and point early supporters toward the next G2GOD release while checkout is being finalized.</p>
       </div>
-      <a href="index.html#contact" class="signup-btn">Contact G2GOD</a>
+      <a href="/#contact" class="signup-btn">Contact G2GOD</a>
     </section>
   </main>
 
   <footer id="contact">
     <div class="footer-brand">
-      <a href="index.html" class="nav-logo">G2<span>GOD</span></a>
+      <a href="/" class="nav-logo">G2<span>GOD</span></a>
       <p>Christian apparel built for athletes who compete for an audience of One.</p>
     </div>
     <div class="footer-col">
@@ -857,10 +905,10 @@
     <div class="footer-col">
       <h4>Company</h4>
       <ul>
-        <li><a href="index.html#about">Our Mission</a></li>
+        <li><a href="/#about">Our Mission</a></li>
         <li><a href="#contact">Contact Us</a></li>
         <li><a href="#">Instagram</a></li>
-        <li><a href="index.html">G2GOD.com</a></li>
+        <li><a href="/">G2GOD.com</a></li>
       </ul>
     </div>
   </footer>
@@ -870,6 +918,24 @@
     <p>Glory to God - One Name Above All</p>
   </div>
   <script>
+    const nav = document.querySelector('nav');
+    const menuToggle = document.querySelector('.menu-toggle');
+    const navLinks = document.querySelectorAll('.nav-links a');
+
+    menuToggle.addEventListener('click', () => {
+      const isOpen = nav.classList.toggle('menu-open');
+      menuToggle.setAttribute('aria-expanded', String(isOpen));
+      menuToggle.setAttribute('aria-label', isOpen ? 'Close navigation menu' : 'Open navigation menu');
+    });
+
+    navLinks.forEach((link) => {
+      link.addEventListener('click', () => {
+        nav.classList.remove('menu-open');
+        menuToggle.setAttribute('aria-expanded', 'false');
+        menuToggle.setAttribute('aria-label', 'Open navigation menu');
+      });
+    });
+
     const filterButtons = document.querySelectorAll('.filter-btn');
     const productCards = document.querySelectorAll('.product-card');
 

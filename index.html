@@ -110,6 +110,31 @@
 
     .nav-links a:hover { opacity: 1; }
 
+    .menu-toggle {
+      display: none;
+      width: 44px;
+      height: 44px;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 6px;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: rgba(0,0,0,0.38);
+      color: var(--white);
+      cursor: pointer;
+    }
+
+    .menu-toggle span {
+      width: 20px;
+      height: 2px;
+      background: currentColor;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+
+    nav.menu-open .menu-toggle span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+    nav.menu-open .menu-toggle span:nth-child(2) { opacity: 0; }
+    nav.menu-open .menu-toggle span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
     /* ── HERO ── */
     .hero {
       position: relative;
@@ -920,7 +945,24 @@
     /* ── RESPONSIVE ── */
     @media (max-width: 900px) {
       nav { padding: 24px 30px; }
-      .nav-links { display: none; }
+      .menu-toggle { display: inline-flex; }
+      .nav-links {
+        display: none;
+        position: absolute;
+        top: calc(100% + 10px);
+        right: 30px;
+        left: 30px;
+        flex-direction: column;
+        gap: 0;
+        padding: 14px;
+        background: rgba(0,0,0,0.92);
+        border: 1px solid rgba(255,255,255,0.16);
+      }
+      nav.menu-open .nav-links { display: flex; }
+      .nav-links a {
+        display: block;
+        padding: 14px 6px;
+      }
       .hero { padding: 0 30px 70px; }
       .statement { grid-template-columns: 1fr; gap: 40px; padding: 80px 30px; }
       .statement-right { border-left: none; padding-left: 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 40px; }
@@ -964,11 +1006,16 @@
   <nav>
     <a href="#" class="nav-logo">G2<span>GOD</span></a>
     <ul class="nav-links">
-      <li><a href="shop.html">Shop</a></li>
-      <li><a href="globe.html">Player Globe</a></li>
+      <li><a href="/shop">Shop</a></li>
+      <li><a href="/globe">Player Globe</a></li>
       <li><a href="#about">Our Mission</a></li>
       <li><a href="#contact">Contact</a></li>
     </ul>
+    <button class="menu-toggle" type="button" aria-label="Open navigation menu" aria-expanded="false">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </button>
   </nav>
 
   <!-- SLIDE DOTS -->
@@ -989,7 +1036,7 @@
     </h1>
     <p class="hero-sub">Wear your faith.<br>Carry His name into every arena.</p>
     <div class="hero-cta">
-      <a href="shop.html" class="btn-primary">Shop the Collection</a>
+      <a href="/shop" class="btn-primary">Shop the Collection</a>
       <a href="#about" class="btn-secondary">Our Mission</a>
     </div>
   </section>
@@ -998,7 +1045,7 @@
   <section class="collection" id="collection">
     <div class="collection-header">
       <h2 class="collection-title">The Collection</h2>
-      <a href="shop.html" class="collection-link">View All</a>
+      <a href="/shop" class="collection-link">View All</a>
     </div>
     <article class="limited-drop">
       <div class="limited-copy">
@@ -1010,7 +1057,7 @@
           <span>Premium Card Stock</span>
           <span>Coming Soon</span>
         </div>
-        <a href="shop.html#notify" class="limited-btn">Reserve Interest</a>
+        <a href="/shop#notify" class="limited-btn">Reserve Interest</a>
       </div>
       <div class="limited-art" aria-label="Limited edition G2GOD player testimonial card"></div>
     </article>
@@ -1091,7 +1138,7 @@
       <p class="roster-label">G2GOD · Journey Roster</p>
       <h2 class="roster-title">Where We Compete</h2>
       <p class="roster-sub">Every pin is an athlete. Click to hear their story.</p>
-      <a href="globe.html" class="btn-secondary" style="margin-top:20px;">Open the 3D Player Globe</a>
+      <a href="/globe" class="btn-secondary" style="margin-top:20px;">Open the 3D Player Globe</a>
     </div>
     <div id="map"></div>
 
@@ -1120,10 +1167,10 @@
     <div class="footer-col">
       <h4>Shop</h4>
       <ul>
-        <li><a href="shop.html#products">New Arrivals</a></li>
-        <li><a href="shop.html#products">Tees & Tops</a></li>
-        <li><a href="shop.html#products">Hoodies</a></li>
-        <li><a href="shop.html#products">Accessories</a></li>
+        <li><a href="/shop#products">New Arrivals</a></li>
+        <li><a href="/shop#products">Tees & Tops</a></li>
+        <li><a href="/shop#products">Hoodies</a></li>
+        <li><a href="/shop#products">Accessories</a></li>
       </ul>
     </div>
     <div class="footer-col">
@@ -1143,6 +1190,24 @@
   </div>
 
   <script>
+    const nav = document.querySelector('nav');
+    const menuToggle = document.querySelector('.menu-toggle');
+    const navLinks = document.querySelectorAll('.nav-links a');
+
+    menuToggle.addEventListener('click', () => {
+      const isOpen = nav.classList.toggle('menu-open');
+      menuToggle.setAttribute('aria-expanded', String(isOpen));
+      menuToggle.setAttribute('aria-label', isOpen ? 'Close navigation menu' : 'Open navigation menu');
+    });
+
+    navLinks.forEach((link) => {
+      link.addEventListener('click', () => {
+        nav.classList.remove('menu-open');
+        menuToggle.setAttribute('aria-expanded', 'false');
+        menuToggle.setAttribute('aria-label', 'Open navigation menu');
+      });
+    });
+
     const slides = document.querySelectorAll('.slide');
     const dotsContainer = document.getElementById('slideDots');
     let current = 0;
@@ -1362,7 +1427,7 @@
     function placeMarker(player) {
       const marker = L.marker(player.coords, { icon: makePinIcon(player.name) }).addTo(map);
       marker.on('click', () => {
-        window.location.href = `athlete.html?id=${player.id}`;
+        window.location.href = `/athlete?id=${player.id}`;
       });
       marker.bindTooltip(`<b>${escapeHtml(player.name)}</b><br>${escapeHtml(player.location)}`, {
         direction: 'top', offset: [0, -16],
@@ -1420,7 +1485,7 @@
     function renderList() {
       const list = document.getElementById('roster-list');
       list.innerHTML = players.map(p => `
-        <div class="roster-chip" onclick="window.location.href='athlete.html?id=${p.id}'" style="cursor:pointer">
+        <div class="roster-chip" onclick="window.location.href='/athlete?id=${p.id}'" style="cursor:pointer">
           ✝ ${escapeHtml(p.name)} <span>${p.sport ? escapeHtml(p.sport) + ' · ' : ''}${escapeHtml(p.location)}</span>
           <button onclick="event.stopPropagation();removePin(${p.id})">✕</button>
         </div>

@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>G2GOD - Player Testimonial Card</title>
+  <link rel="icon" href="data:," />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700&family=Barlow:wght@300;400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --white: #ffffff;
+      --black: #000000;
+      --muted: rgba(255,255,255,0.58);
+      --line: rgba(255,255,255,0.13);
+      --panel: rgba(255,255,255,0.045);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: #000;
+      color: var(--white);
+      font-family: 'Barlow', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,0.08), #000 64%),
+        radial-gradient(circle at 88% 12%, rgba(255,255,255,0.09), transparent 28%),
+        radial-gradient(circle at 12% 76%, rgba(255,255,255,0.06), transparent 30%);
+    }
+
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 60px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.86), rgba(0,0,0,0));
+    }
+
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 0.15em;
+      color: var(--white);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 40px;
+      list-style: none;
+    }
+
+    .nav-links a,
+    .eyebrow,
+    .pill,
+    .option-label,
+    .section-kicker,
+    .trust-item span,
+    .spec-row span,
+    .related-label,
+    .footer-col h4 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .nav-links a {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.76);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover,
+    .nav-links .active { color: #fff; }
+
+    .menu-toggle {
+      display: none;
+      width: 44px;
+      height: 44px;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 6px;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: rgba(0,0,0,0.48);
+      color: var(--white);
+      cursor: pointer;
+    }
+
+    .menu-toggle span {
+      width: 20px;
+      height: 2px;
+      background: currentColor;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+
+    nav.menu-open .menu-toggle span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+    nav.menu-open .menu-toggle span:nth-child(2) { opacity: 0; }
+    nav.menu-open .menu-toggle span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
+    main {
+      position: relative;
+      z-index: 2;
+    }
+
+    .product-hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.95fr);
+      gap: 58px;
+      align-items: center;
+      padding: 138px 60px 72px;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: 86px minmax(0, 1fr);
+      gap: 16px;
+      min-width: 0;
+    }
+
+    .thumbs {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .thumb {
+      border: 1px solid rgba(255,255,255,0.16);
+      background: #080808;
+      padding: 0;
+      cursor: pointer;
+      height: 86px;
+      overflow: hidden;
+    }
+
+    .thumb[aria-selected="true"] { border-color: #fff; }
+
+    .thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: grayscale(1) contrast(1.08);
+      display: block;
+    }
+
+    .main-image {
+      position: relative;
+      min-height: 680px;
+      background: #080808;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .main-image::after {
+      content: '';
+      position: absolute;
+      inset: 18px;
+      border: 1px solid rgba(255,255,255,0.16);
+      pointer-events: none;
+    }
+
+    .main-image img {
+      width: 100%;
+      height: 100%;
+      min-height: 680px;
+      object-fit: cover;
+      filter: grayscale(1) contrast(1.08) brightness(0.92);
+      display: block;
+    }
+
+    .product-copy {
+      max-width: 620px;
+    }
+
+    .eyebrow {
+      color: rgba(255,255,255,0.46);
+      font-size: 0.74rem;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(4.3rem, 8vw, 8rem);
+      line-height: 0.9;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    .rating {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: rgba(255,255,255,0.68);
+      margin-bottom: 24px;
+    }
+
+    .stars {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: #fff;
+    }
+
+    .summary {
+      color: rgba(255,255,255,0.68);
+      font-size: 1.06rem;
+      line-height: 1.8;
+      margin-bottom: 28px;
+    }
+
+    .price-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .price {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3.2rem;
+      letter-spacing: 0.03em;
+    }
+
+    .pill {
+      border: 1px solid rgba(255,255,255,0.18);
+      color: rgba(255,255,255,0.68);
+      padding: 9px 12px;
+      font-size: 0.68rem;
+    }
+
+    .option-group {
+      margin-bottom: 24px;
+    }
+
+    .option-label {
+      display: block;
+      color: rgba(255,255,255,0.46);
+      font-size: 0.7rem;
+      margin-bottom: 10px;
+    }
+
+    .option-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .option-btn,
+    .qty-btn {
+      border: 1px solid rgba(255,255,255,0.18);
+      background: transparent;
+      color: #fff;
+      cursor: pointer;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .option-btn {
+      min-width: 118px;
+      padding: 13px 15px;
+      color: rgba(255,255,255,0.7);
+    }
+
+    .option-btn.active {
+      background: #fff;
+      color: #000;
+      border-color: #fff;
+    }
+
+    .qty-control {
+      display: inline-grid;
+      grid-template-columns: 42px 52px 42px;
+      height: 44px;
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+
+    .qty-btn {
+      border: 0;
+      font-size: 1rem;
+    }
+
+    .qty-control output {
+      display: grid;
+      place-items: center;
+      border-left: 1px solid rgba(255,255,255,0.18);
+      border-right: 1px solid rgba(255,255,255,0.18);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 0.82fr);
+      gap: 12px;
+      margin: 30px 0 22px;
+    }
+
+    .btn-primary,
+    .btn-secondary,
+    .related-btn,
+    .signup-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 54px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 0.82rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: #fff;
+      color: #000;
+      border: 1px solid #fff;
+    }
+
+    .btn-secondary {
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.22);
+    }
+
+    .mini-note {
+      color: rgba(255,255,255,0.5);
+      line-height: 1.65;
+      font-size: 0.92rem;
+      margin-bottom: 24px;
+    }
+
+    .trust-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.08);
+      gap: 1px;
+    }
+
+    .trust-item {
+      background: #050505;
+      padding: 18px;
+    }
+
+    .trust-item span {
+      display: block;
+      color: rgba(255,255,255,0.44);
+      font-size: 0.64rem;
+      margin-bottom: 8px;
+    }
+
+    .trust-item strong {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 0.03em;
+      font-weight: 400;
+    }
+
+    .section {
+      padding: 92px 60px;
+      background: #000;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 32px;
+      align-items: end;
+      margin-bottom: 34px;
+    }
+
+    .section-kicker {
+      color: rgba(255,255,255,0.43);
+      font-size: 0.72rem;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem, 5.8vw, 5rem);
+      line-height: 0.95;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .section-copy {
+      max-width: 460px;
+      color: rgba(255,255,255,0.56);
+      line-height: 1.75;
+    }
+
+    .benefit-grid,
+    .review-grid,
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .benefit,
+    .review {
+      background: #050505;
+      padding: 34px;
+      min-height: 250px;
+    }
+
+    .benefit span {
+      display: block;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3.4rem;
+      color: rgba(255,255,255,0.16);
+      margin-bottom: 18px;
+    }
+
+    .benefit h3,
+    .review h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 0.03em;
+      margin-bottom: 12px;
+      font-weight: 400;
+    }
+
+    .benefit p,
+    .review p,
+    .faq p {
+      color: rgba(255,255,255,0.58);
+      line-height: 1.75;
+    }
+
+    .details-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      gap: 1px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.12);
+    }
+
+    .story-panel,
+    .spec-panel {
+      background: #050505;
+      padding: 42px;
+    }
+
+    .story-panel {
+      background:
+        linear-gradient(90deg, rgba(0,0,0,0.9), rgba(0,0,0,0.52)),
+        url('assets/home/basketball-spotlight.png');
+      background-size: cover;
+      background-position: center;
+      min-height: 470px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    .story-panel h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem, 5vw, 5.6rem);
+      line-height: 0.92;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      max-width: 520px;
+    }
+
+    .story-panel p {
+      color: rgba(255,255,255,0.7);
+      line-height: 1.82;
+      max-width: 560px;
+    }
+
+    .spec-row {
+      display: grid;
+      grid-template-columns: 150px minmax(0, 1fr);
+      gap: 24px;
+      padding: 18px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .spec-row:last-child { border-bottom: 0; }
+
+    .spec-row span {
+      color: rgba(255,255,255,0.4);
+      font-size: 0.68rem;
+    }
+
+    .spec-row strong {
+      color: rgba(255,255,255,0.82);
+      font-weight: 400;
+      line-height: 1.6;
+    }
+
+    .faq-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .faq {
+      border: 1px solid rgba(255,255,255,0.12);
+      background: #050505;
+      padding: 0;
+    }
+
+    .faq summary {
+      cursor: pointer;
+      list-style: none;
+      padding: 24px 28px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .faq summary::-webkit-details-marker { display: none; }
+
+    .faq summary::after {
+      content: '+';
+      color: rgba(255,255,255,0.5);
+    }
+
+    .faq[open] summary::after { content: '-'; }
+
+    .faq p {
+      padding: 0 28px 26px;
+      max-width: 780px;
+    }
+
+    .related-card {
+      position: relative;
+      min-height: 430px;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-end;
+      padding: 28px;
+      background: #080808;
+    }
+
+    .related-card img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: grayscale(1) contrast(1.08) brightness(0.78);
+      transition: transform 0.45s ease;
+    }
+
+    .related-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background: linear-gradient(to top, rgba(0,0,0,0.92), rgba(0,0,0,0.16) 68%);
+    }
+
+    .related-card:hover img { transform: scale(1.05); }
+
+    .related-info {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+    }
+
+    .related-label {
+      color: rgba(255,255,255,0.52);
+      font-size: 0.68rem;
+      margin-bottom: 10px;
+    }
+
+    .related-info h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 0.04em;
+      margin-bottom: 16px;
+    }
+
+    .related-btn {
+      min-height: 42px;
+      width: 100%;
+      color: #000;
+      background: #fff;
+      font-size: 0.74rem;
+    }
+
+    .signup {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 28px;
+      align-items: center;
+      padding: 54px 60px;
+      background: #fff;
+      color: #000;
+    }
+
+    .signup h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.6rem, 5vw, 4.8rem);
+      line-height: 0.95;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .signup p {
+      color: rgba(0,0,0,0.56);
+      line-height: 1.7;
+      max-width: 560px;
+      margin-top: 14px;
+    }
+
+    .signup-btn {
+      background: #000;
+      color: #fff;
+      padding: 0 30px;
+      white-space: nowrap;
+    }
+
+    footer {
+      position: relative;
+      background-image: url('assets/home/baseball-diamond.png');
+      background-attachment: fixed;
+      background-size: cover;
+      background-position: center top;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding: 60px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 40px;
+      align-items: start;
+    }
+
+    footer::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+    }
+
+    footer > * { position: relative; z-index: 1; }
+
+    .footer-brand .nav-logo {
+      display: block;
+      margin-bottom: 16px;
+    }
+
+    .footer-brand p {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.42);
+      line-height: 1.7;
+      max-width: 270px;
+    }
+
+    .footer-col h4 {
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.72);
+      margin-bottom: 20px;
+    }
+
+    .footer-col ul { list-style: none; }
+
+    .footer-col li { margin-bottom: 10px; }
+
+    .footer-col a {
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.46);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-col a:hover { color: #fff; }
+
+    .footer-bottom {
+      position: relative;
+      background: #000;
+      padding: 20px 60px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-bottom p {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      color: rgba(255,255,255,0.25);
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 1040px) {
+      nav { padding: 24px 30px; }
+      .nav-links { gap: 22px; }
+      .product-hero,
+      .details-layout,
+      .signup {
+        grid-template-columns: 1fr;
+      }
+      .product-copy { max-width: none; }
+      .main-image,
+      .main-image img { min-height: 560px; }
+      .benefit-grid,
+      .review-grid,
+      .related-grid,
+      .trust-grid {
+        grid-template-columns: 1fr;
+      }
+      footer { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 680px) {
+      nav { position: absolute; padding: 22px 24px; }
+      .menu-toggle { display: inline-flex; }
+      .nav-links {
+        display: none;
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 24px;
+        left: 24px;
+        flex-direction: column;
+        gap: 0;
+        padding: 14px;
+        background: rgba(0,0,0,0.94);
+        border: 1px solid rgba(255,255,255,0.16);
+      }
+      nav.menu-open .nav-links { display: flex; }
+      .nav-links a {
+        display: block;
+        padding: 14px 6px;
+      }
+      .product-hero { padding: 118px 24px 56px; gap: 34px; }
+      .gallery { grid-template-columns: 1fr; }
+      .thumbs {
+        order: 2;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+      .thumb { height: 74px; }
+      .main-image,
+      .main-image img { min-height: 420px; }
+      h1 { font-size: 3.8rem; }
+      .actions { grid-template-columns: 1fr; }
+      .section { padding: 68px 24px; }
+      .section-header { display: block; }
+      .section-copy { margin-top: 16px; }
+      .benefit,
+      .review,
+      .story-panel,
+      .spec-panel {
+        padding: 30px 24px;
+      }
+      .spec-row { grid-template-columns: 1fr; gap: 7px; }
+      .signup { padding: 38px 24px; }
+      .signup-btn { justify-self: start; }
+      footer { padding: 48px 24px; }
+      .footer-bottom {
+        padding: 20px 24px;
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/" class="nav-logo">G2<span>GOD</span></a>
+    <ul class="nav-links">
+      <li><a class="active" href="/shop">Shop</a></li>
+      <li><a href="/globe">Player Globe</a></li>
+      <li><a href="/#about">Our Mission</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <button class="menu-toggle" type="button" aria-label="Open navigation menu" aria-expanded="false">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </button>
+  </nav>
+
+  <main>
+    <section class="product-hero">
+      <div class="gallery" aria-label="Product images">
+        <div class="thumbs" role="tablist" aria-label="Choose product image">
+          <button class="thumb" type="button" aria-selected="true" data-image="assets/home/limited-card.png" data-alt="G2GOD player testimonial card front">
+            <img src="assets/home/limited-card.png" alt="" />
+          </button>
+          <button class="thumb" type="button" aria-selected="false" data-image="assets/players/allen-iverson.webp" data-alt="Featured athlete portrait inspiration">
+            <img src="assets/players/allen-iverson.webp" alt="" />
+          </button>
+          <button class="thumb" type="button" aria-selected="false" data-image="assets/home/basketball-spotlight.png" data-alt="Basketball court spotlight detail">
+            <img src="assets/home/basketball-spotlight.png" alt="" />
+          </button>
+          <button class="thumb" type="button" aria-selected="false" data-image="assets/home/track-one.png" data-alt="G2GOD athletic arena lifestyle detail">
+            <img src="assets/home/track-one.png" alt="" />
+          </button>
+        </div>
+        <div class="main-image">
+          <img id="mainProductImage" src="assets/home/limited-card.png" alt="G2GOD player testimonial card front" />
+        </div>
+      </div>
+
+      <div class="product-copy">
+        <p class="eyebrow">Limited Edition Drop</p>
+        <h1>Player Testimonial Card</h1>
+        <div class="rating" aria-label="Product rating">
+          <span class="stars">★★★★★</span>
+          <span>4.9 preview rating from early supporters</span>
+        </div>
+        <p class="summary">A premium collector-style faith card built to honor the athlete's testimony, scripture, and the gift behind the game. Designed for display, gifting, and carrying the message beyond the scoreboard.</p>
+        <div class="price-row">
+          <p class="price">$24</p>
+          <span class="pill">Coming Soon</span>
+          <span class="pill">Limited Run</span>
+        </div>
+
+        <div class="option-group">
+          <span class="option-label">Edition</span>
+          <div class="option-buttons" data-option-group="edition">
+            <button class="option-btn active" type="button">Standard</button>
+            <button class="option-btn" type="button">Signed Look</button>
+            <button class="option-btn" type="button">Founder Pack</button>
+          </div>
+        </div>
+
+        <div class="option-group">
+          <span class="option-label">Quantity</span>
+          <div class="qty-control" aria-label="Quantity selector">
+            <button class="qty-btn" type="button" data-qty="decrease" aria-label="Decrease quantity">-</button>
+            <output id="quantity">1</output>
+            <button class="qty-btn" type="button" data-qty="increase" aria-label="Increase quantity">+</button>
+          </div>
+        </div>
+
+        <div class="actions">
+          <a class="btn-primary" href="/#contact">Reserve Interest</a>
+          <a class="btn-secondary" href="#details">View Details</a>
+        </div>
+
+        <p class="mini-note">Checkout is not live yet. This product page is structured for launch and can connect to Stripe, Shopify, or another checkout when the store opens.</p>
+
+        <div class="trust-grid" aria-label="Product reassurance">
+          <div class="trust-item">
+            <span>Ships In</span>
+            <strong>Drop Window</strong>
+          </div>
+          <div class="trust-item">
+            <span>Returns</span>
+            <strong>14 Days</strong>
+          </div>
+          <div class="trust-item">
+            <span>Packaging</span>
+            <strong>Display Ready</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="details">
+      <div class="section-header">
+        <div>
+          <p class="section-kicker">Why It Exists</p>
+          <h2 class="section-title">Faith In The Frame</h2>
+        </div>
+        <p class="section-copy">Each card gives the athlete's platform a deeper center: testimony, scripture, and a visible reminder that every gift points back to God.</p>
+      </div>
+      <div class="benefit-grid">
+        <article class="benefit">
+          <span>01</span>
+          <h3>Testimony First</h3>
+          <p>Built around the story behind the athlete, not just the highlight. The card leaves room for faith, gratitude, and purpose.</p>
+        </article>
+        <article class="benefit">
+          <span>02</span>
+          <h3>Collector Finish</h3>
+          <p>Premium card stock, sharp monochrome art direction, and a serialized-drop feel make it ready for display.</p>
+        </article>
+        <article class="benefit">
+          <span>03</span>
+          <h3>Giftable Message</h3>
+          <p>Designed for fans, athletes, families, and teams who want a physical reminder of competing for an audience of One.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="details-layout">
+        <article class="story-panel">
+          <p class="section-kicker">Product Story</p>
+          <h3>One Name Above All</h3>
+          <p>The G2GOD testimonial card turns a player's public gift into a private reminder: the arena is temporary, but the glory belongs to God. This first drop sets the pattern for the full roster.</p>
+        </article>
+        <article class="spec-panel">
+          <div class="spec-row">
+            <span>Material</span>
+            <strong>Premium heavy card stock with protective satin-style finish.</strong>
+          </div>
+          <div class="spec-row">
+            <span>Size</span>
+            <strong>Standard trading card format, designed for sleeves, stands, and display cases.</strong>
+          </div>
+          <div class="spec-row">
+            <span>Included</span>
+            <strong>Front artwork, scripture detail, testimony space, and G2GOD drop mark.</strong>
+          </div>
+          <div class="spec-row">
+            <span>Care</span>
+            <strong>Keep dry, avoid direct sunlight for long periods, and store in a sleeve or display frame.</strong>
+          </div>
+          <div class="spec-row">
+            <span>Availability</span>
+            <strong>Coming soon as a limited drop. Final player, price, and edition count can be updated before launch.</strong>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <p class="section-kicker">Social Proof</p>
+          <h2 class="section-title">Early Support</h2>
+        </div>
+        <p class="section-copy">Placeholder reviews are included so the page is ready for real customer quotes once products begin shipping.</p>
+      </div>
+      <div class="review-grid">
+        <article class="review">
+          <h3>Meaningful</h3>
+          <p>"This feels like more than merch. It is something I would keep by my desk before games."</p>
+        </article>
+        <article class="review">
+          <h3>Gift Ready</h3>
+          <p>"Perfect for young athletes who need the reminder that their identity is bigger than a stat line."</p>
+        </article>
+        <article class="review">
+          <h3>Clean Design</h3>
+          <p>"The black and white look makes it feel premium, serious, and easy to display."</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <p class="section-kicker">Questions</p>
+          <h2 class="section-title">Product FAQ</h2>
+        </div>
+      </div>
+      <div class="faq-list">
+        <details class="faq" open>
+          <summary>When will this product ship?</summary>
+          <p>Shipping timing will be announced with the official drop window. For now, the page is ready to collect interest and point visitors to contact G2GOD.</p>
+        </details>
+        <details class="faq">
+          <summary>Can this connect to checkout later?</summary>
+          <p>Yes. The reserve buttons can be replaced with Stripe, Shopify, WooCommerce, or another payment link when the store setup is ready.</p>
+        </details>
+        <details class="faq">
+          <summary>Will there be different athletes?</summary>
+          <p>That is the natural direction for the series. The page is structured so athlete-specific images, testimony, scripture, and edition details can be swapped in quickly.</p>
+        </details>
+        <details class="faq">
+          <summary>What is the return policy?</summary>
+          <p>The placeholder policy is 14 days after delivery for unused and undamaged items. Final store terms can be updated before launch.</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <p class="section-kicker">Complete The Drop</p>
+          <h2 class="section-title">Related Products</h2>
+        </div>
+      </div>
+      <div class="related-grid">
+        <article class="related-card">
+          <img src="assets/home/field-fog.png" alt="Seek Hoodie product placeholder" />
+          <div class="related-info">
+            <p class="related-label">G2GOD Collection</p>
+            <h3>Seek Hoodie</h3>
+            <a class="related-btn" href="/shop#products">View In Shop</a>
+          </div>
+        </article>
+        <article class="related-card">
+          <img src="assets/players/allen-iverson-jersey.webp" alt="AI jersey placeholder" />
+          <div class="related-info">
+            <p class="related-label">Featured Jersey</p>
+            <h3>AI Jersey</h3>
+            <a class="related-btn" href="/shop#products">View In Shop</a>
+          </div>
+        </article>
+        <article class="related-card">
+          <img src="assets/home/baseball-diamond.png" alt="Audience of One tee placeholder" />
+          <div class="related-info">
+            <p class="related-label">Tees & Tops</p>
+            <h3>Audience Tee</h3>
+            <a class="related-btn" href="/shop#products">View In Shop</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="signup" id="notify">
+      <div>
+        <h2>Get Notified When The Drop Opens</h2>
+        <p>Reserve interest now and send early supporters to the G2GOD contact form while checkout, inventory, and final drop details are being prepared.</p>
+      </div>
+      <a href="/#contact" class="signup-btn">Contact G2GOD</a>
+    </section>
+  </main>
+
+  <footer id="contact">
+    <div class="footer-brand">
+      <a href="/" class="nav-logo">G2<span>GOD</span></a>
+      <p>Christian apparel built for athletes who compete for an audience of One.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Shop</h4>
+      <ul>
+        <li><a href="/shop#products">New Arrivals</a></li>
+        <li><a href="/shop#products">Tees & Tops</a></li>
+        <li><a href="/shop#products">Hoodies</a></li>
+        <li><a href="/shop#products">Accessories</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="/#about">Our Mission</a></li>
+        <li><a href="/#contact">Contact Us</a></li>
+        <li><a href="#">Instagram</a></li>
+        <li><a href="/">G2GOD.com</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <div class="footer-bottom">
+    <p>Copyright 2026 G2GOD. All rights reserved.</p>
+    <p>Glory to God - One Name Above All</p>
+  </div>
+
+  <script>
+    const nav = document.querySelector('nav');
+    const menuToggle = document.querySelector('.menu-toggle');
+    const navLinks = document.querySelectorAll('.nav-links a');
+
+    menuToggle.addEventListener('click', () => {
+      const isOpen = nav.classList.toggle('menu-open');
+      menuToggle.setAttribute('aria-expanded', String(isOpen));
+      menuToggle.setAttribute('aria-label', isOpen ? 'Close navigation menu' : 'Open navigation menu');
+    });
+
+    navLinks.forEach((link) => {
+      link.addEventListener('click', () => {
+        nav.classList.remove('menu-open');
+        menuToggle.setAttribute('aria-expanded', 'false');
+        menuToggle.setAttribute('aria-label', 'Open navigation menu');
+      });
+    });
+
+    const mainImage = document.querySelector('#mainProductImage');
+    const thumbs = document.querySelectorAll('.thumb');
+    const optionGroups = document.querySelectorAll('[data-option-group]');
+    const qtyOutput = document.querySelector('#quantity');
+    const qtyButtons = document.querySelectorAll('[data-qty]');
+    let quantity = 1;
+
+    thumbs.forEach((thumb) => {
+      thumb.addEventListener('click', () => {
+        thumbs.forEach((item) => item.setAttribute('aria-selected', 'false'));
+        thumb.setAttribute('aria-selected', 'true');
+        mainImage.src = thumb.dataset.image;
+        mainImage.alt = thumb.dataset.alt;
+      });
+    });
+
+    optionGroups.forEach((group) => {
+      group.addEventListener('click', (event) => {
+        const button = event.target.closest('.option-btn');
+        if (!button) return;
+        group.querySelectorAll('.option-btn').forEach((item) => item.classList.remove('active'));
+        button.classList.add('active');
+      });
+    });
+
+    qtyButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const direction = button.dataset.qty;
+        quantity = direction === 'increase' ? Math.min(quantity + 1, 10) : Math.max(quantity - 1, 1);
+        qtyOutput.textContent = quantity;
+      });
+    });
+  </script>
+</body>
+</html>

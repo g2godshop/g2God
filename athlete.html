@@ -57,6 +57,50 @@
     .back-link:hover { color: #fff; }
     .back-link::before { content: '←'; }
 
+    .nav-links {
+      display: flex;
+      gap: 34px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      font-size: 0.78rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: #fff; }
+
+    .menu-toggle {
+      display: none;
+      width: 44px;
+      height: 44px;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 6px;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: rgba(0,0,0,0.48);
+      color: var(--white);
+      cursor: pointer;
+    }
+
+    .menu-toggle span {
+      width: 20px;
+      height: 2px;
+      background: currentColor;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+
+    nav.menu-open .menu-toggle span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+    nav.menu-open .menu-toggle span:nth-child(2) { opacity: 0; }
+    nav.menu-open .menu-toggle span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
     /* HERO */
     .athlete-hero {
       display: grid;
@@ -267,7 +311,27 @@
     }
 
     @media (max-width: 768px) {
-      nav { padding: 20px 24px; }
+      nav { position: relative; padding: 20px 24px; }
+      .back-link { display: none; }
+      .menu-toggle { display: inline-flex; }
+      .nav-links {
+        display: none;
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 24px;
+        left: 24px;
+        z-index: 10;
+        flex-direction: column;
+        gap: 0;
+        padding: 14px;
+        background: rgba(0,0,0,0.94);
+        border: 1px solid rgba(255,255,255,0.16);
+      }
+      nav.menu-open .nav-links { display: flex; }
+      .nav-links a {
+        display: block;
+        padding: 14px 6px;
+      }
       .athlete-hero { grid-template-columns: 1fr; }
       .athlete-photo { min-height: 50vw; }
       .athlete-info { padding: 50px 24px; }
@@ -280,13 +344,43 @@
 <body>
 
   <nav>
-    <a href="index.html" class="nav-logo">G2GOD</a>
-    <a href="index.html#roster" class="back-link">Back to Roster</a>
+    <a href="/" class="nav-logo">G2GOD</a>
+    <ul class="nav-links">
+      <li><a href="/shop">Shop</a></li>
+      <li><a href="/globe">Player Globe</a></li>
+      <li><a href="/#about">Our Mission</a></li>
+      <li><a href="/#contact">Contact</a></li>
+      <li><a href="/#roster">Back to Roster</a></li>
+    </ul>
+    <button class="menu-toggle" type="button" aria-label="Open navigation menu" aria-expanded="false">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </button>
+    <a href="/#roster" class="back-link">Back to Roster</a>
   </nav>
 
   <div id="page-content"></div>
 
   <script>
+    const nav = document.querySelector('nav');
+    const menuToggle = document.querySelector('.menu-toggle');
+    const navLinks = document.querySelectorAll('.nav-links a');
+
+    menuToggle.addEventListener('click', () => {
+      const isOpen = nav.classList.toggle('menu-open');
+      menuToggle.setAttribute('aria-expanded', String(isOpen));
+      menuToggle.setAttribute('aria-label', isOpen ? 'Close navigation menu' : 'Open navigation menu');
+    });
+
+    navLinks.forEach((link) => {
+      link.addEventListener('click', () => {
+        nav.classList.remove('menu-open');
+        menuToggle.setAttribute('aria-expanded', 'false');
+        menuToggle.setAttribute('aria-label', 'Open navigation menu');
+      });
+    });
+
     const params = new URLSearchParams(window.location.search);
     const id = parseInt(params.get('id'));
     const players = JSON.parse(localStorage.getItem('g2god_players') || '[]');
@@ -311,7 +405,7 @@
       content.innerHTML = `
         <div class="not-found">
           <h2>Athlete Not Found</h2>
-          <a href="index.html#roster">← Return to Roster</a>
+          <a href="/#roster">← Return to Roster</a>
         </div>`;
     } else {
       const photoStyle = athlete.photo
@@ -354,7 +448,7 @@
             <h3>${escapeHtml(athlete.name.split(' ')[0])}'s Journey Shirt</h3>
             <p>Wear their story. Carry His name.</p>
           </div>
-          <a href="shop.html" class="journey-btn">Shop G2GOD</a>
+          <a href="/shop" class="journey-btn">Shop G2GOD</a>
         </div>
 
         <footer class="page-footer">

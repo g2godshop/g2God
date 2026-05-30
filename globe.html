@@ -96,6 +96,31 @@
     .nav-links a:hover,
     .nav-links .active { color: #fff; }
 
+    .menu-toggle {
+      display: none;
+      width: 44px;
+      height: 44px;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 6px;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: rgba(0,0,0,0.48);
+      color: var(--white);
+      cursor: pointer;
+    }
+
+    .menu-toggle span {
+      width: 20px;
+      height: 2px;
+      background: currentColor;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+
+    nav.menu-open .menu-toggle span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+    nav.menu-open .menu-toggle span:nth-child(2) { opacity: 0; }
+    nav.menu-open .menu-toggle span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
     main {
       position: relative;
       z-index: 2;
@@ -539,7 +564,24 @@
     }
 
     @media (max-width: 680px) {
-      .nav-links { display: none; }
+      .menu-toggle { display: inline-flex; }
+      .nav-links {
+        display: none;
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 26px;
+        left: 26px;
+        flex-direction: column;
+        gap: 0;
+        padding: 14px;
+        background: rgba(0,0,0,0.94);
+        border: 1px solid rgba(255,255,255,0.16);
+      }
+      nav.menu-open .nav-links { display: flex; }
+      .nav-links a {
+        display: block;
+        padding: 14px 6px;
+      }
       .globe-stage { min-height: 560px; }
       .hud { left: 20px; right: 20px; top: 22px; }
       h1 { font-size: 4rem; }
@@ -555,13 +597,18 @@
 </head>
 <body>
   <nav>
-    <a href="index.html" class="nav-logo">G2GOD</a>
+    <a href="/" class="nav-logo">G2GOD</a>
     <ul class="nav-links">
-      <li><a href="shop.html">Shop</a></li>
-      <li><a class="active" href="globe.html">Player Globe</a></li>
-      <li><a href="index.html#about">Our Mission</a></li>
-      <li><a href="index.html#contact">Contact</a></li>
+      <li><a href="/shop">Shop</a></li>
+      <li><a class="active" href="/globe">Player Globe</a></li>
+      <li><a href="/#about">Our Mission</a></li>
+      <li><a href="/#contact">Contact</a></li>
     </ul>
+    <button class="menu-toggle" type="button" aria-label="Open navigation menu" aria-expanded="false">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </button>
   </nav>
 
   <main>
@@ -584,6 +631,24 @@
   </main>
 
   <script>
+    const nav = document.querySelector('nav');
+    const menuToggle = document.querySelector('.menu-toggle');
+    const navLinks = document.querySelectorAll('.nav-links a');
+
+    menuToggle.addEventListener('click', () => {
+      const isOpen = nav.classList.toggle('menu-open');
+      menuToggle.setAttribute('aria-expanded', String(isOpen));
+      menuToggle.setAttribute('aria-label', isOpen ? 'Close navigation menu' : 'Open navigation menu');
+    });
+
+    navLinks.forEach((link) => {
+      link.addEventListener('click', () => {
+        nav.classList.remove('menu-open');
+        menuToggle.setAttribute('aria-expanded', 'false');
+        menuToggle.setAttribute('aria-label', 'Open navigation menu');
+      });
+    });
+
     const defaultPlayers = [
       {
         id: 760301,
@@ -827,7 +892,7 @@
             <p class="product-label">Featured Drop</p>
             <h3>${escapeHtml(player.productName || `${player.name} Jersey`)}</h3>
             <p class="price">${escapeHtml(player.price || '$99.00')}</p>
-            <a href="shop.html#products" class="buy-btn">${escapeHtml(player.productCta || 'Buy Jersey')}</a>
+            <a href="/shop#products" class="buy-btn">${escapeHtml(player.productCta || 'Buy Jersey')}</a>
           </div>
         </div>
       `;
