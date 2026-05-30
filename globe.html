@@ -736,9 +736,9 @@
         <div class="panel-body">
           <div class="region-search">
             <p class="panel-label">Search Region</p>
-            <input id="region-search-input" type="text" value="${escapeHtml(query)}" placeholder="Search city or region" autocomplete="off" />
+            <input id="region-search-input" type="text" value="${escapeHtml(query)}" placeholder="Search player, city, or region" autocomplete="off" />
             <div class="region-suggestions">
-              ${suggestions.map(region => `<button class="suggestion-btn" data-region="${escapeHtml(region.key)}">${escapeHtml(region.label)} / ${region.count} player${region.count === 1 ? '' : 's'}</button>`).join('')}
+              ${suggestions.map(match => `<button class="suggestion-btn" data-region="${escapeHtml(match.key)}" data-player-id="${escapeHtml(match.playerId || '')}">${escapeHtml(match.label)} / ${escapeHtml(match.meta)}</button>`).join('')}
             </div>
           </div>
           <p class="panel-label">${escapeHtml(regionKey)} / Available Players</p>
@@ -765,7 +765,8 @@
         }
         const matches = getRegionMatches(nextQuery);
         if (matches[0]) {
-          focusRegion(matches[0].key, { renderOnly: true, query: nextQuery });
+          const player = matches[0].playerId ? players.find(p => String(p.id) === String(matches[0].playerId)) : null;
+          focusRegion(matches[0].key, { player, query: nextQuery });
         } else {
           renderRegion(regionKey, activePlayer, nextQuery);
           document.getElementById('region-search-input')?.focus();
@@ -774,14 +775,20 @@
       input.addEventListener('keydown', event => {
         if (event.key === 'Enter') {
           const match = getRegionMatches(input.value.trim())[0];
-          if (match) focusRegion(match.key);
+          if (match) {
+            const player = match.playerId ? players.find(p => String(p.id) === String(match.playerId)) : null;
+            focusRegion(match.key, { player, query: input.value.trim() });
+          }
         }
       });
       input.focus();
       input.setSelectionRange(input.value.length, input.value.length);
 
       panel.querySelectorAll('.suggestion-btn').forEach(button => {
-        button.addEventListener('click', () => focusRegion(button.dataset.region));
+        button.addEventListener('click', () => {
+          const player = button.dataset.playerId ? players.find(p => String(p.id) === button.dataset.playerId) : null;
+          focusRegion(button.dataset.region, { player, query: input.value.trim() });
+        });
       });
 
       panel.querySelectorAll('.player-result').forEach(button => {
@@ -857,9 +864,33 @@
 
     function getRegionMatches(query) {
       const normalized = String(query || '').trim().toLowerCase();
-      return getRegions()
-        .map(region => ({ key: region, label: region, count: getPlayersForRegion(region).length }))
+      const regionMatches = getRegions()
+        .map(region => ({ key: region, label: region, meta: `${getPlayersForRegion(region).length} player${getPlayersForRegion(region).length === 1 ? '' : 's'}` }))
         .filter(region => !normalized || region.label.toLowerCase().includes(normalized) || region.label.toLowerCase().replace(',', '').includes(normalized));
+
+      const playerMatches = players
+        .filter(player => {
+          if (!normalized) return false;
+          const haystack = [player.name, player.fullName, player.aliases, player.team, player.location, player.region]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase();
+          return haystack.includes(normalized);
+        })
+        .map(player => ({
+          key: getRegionKey(player),
+          playerId: player.id,
+          label: player.name,
+          meta: `${player.team || 'Player'} / ${getRegionKey(player)}`
+        }));
+
+      const seen = new Set();
+      return [...playerMatches, ...regionMatches].filter(match => {
+        const id = `${match.key}:${match.playerId || 'region'}`;
+        if (seen.has(id)) return false;
+        seen.add(id);
+        return true;
+      });
     }
 
     activeCount.textContent = players.length;
@@ -1073,22 +1104,24 @@
       pin.add(hitArea);
 
       const halo = new THREE.Mesh(
-        new THREE.RingGeometry(0.088, 0.105, 56),
-        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.22, side: THREE.DoubleSide })
+        new THREE.RingGeometry(0.106, 0.113, 72),
+        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.16, side: THREE.DoubleSide })
       );
       halo.position.z = 0.017;
+      halo.userData.pulse = 'outer';
       pin.add(halo);
 
       const ring = new THREE.Mesh(
-        new THREE.RingGeometry(0.045, 0.061, 48),
-        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.88, side: THREE.DoubleSide })
+        new THREE.RingGeometry(0.056, 0.068, 64),
+        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.72, side: THREE.DoubleSide })
       );
       ring.position.z = 0.018;
+      ring.userData.pulse = 'inner';
       pin.add(ring);
 
       const core = new THREE.Mesh(
-        new THREE.CircleGeometry(0.018, 32),
-        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.95, side: THREE.DoubleSide })
+        new THREE.CircleGeometry(0.026, 40),
+        new THREE.MeshBasicMaterial({ color: 0xd71935, transparent: true, opacity: 0.96, side: THREE.DoubleSide })
       );
       core.position.z = 0.019;
       pin.add(core);
@@ -1104,7 +1137,7 @@
       const regionPlayers = getPlayersForRegion(regionKey);
       const player = options.player || regionPlayers[0];
       const coords = player?.coords || stateCenters[player?.state] || stateCenters[regionFromLocation(regionKey)];
-      renderRegion(regionKey, player, options.query || regionKey);
+      renderRegion(regionKey, player, options.query ?? regionKey);
       if (options.renderOnly || !coords) return;
       controls.autoRotate = false;
       const [lat, lon] = coords;
@@ -1148,11 +1181,25 @@
     window.addEventListener('resize', resize);
     resize();
 
-    renderRegion(selectedRegionKey, selectedPlayer, selectedRegionKey);
-    setTimeout(() => focusRegion(selectedRegionKey, { player: selectedPlayer }), 650);
+    renderRegion(selectedRegionKey, selectedPlayer, '');
+    setTimeout(() => focusRegion(selectedRegionKey, { player: selectedPlayer, query: '' }), 650);
 
     function animate(time) {
       requestAnimationFrame(animate);
+      pinObjects.forEach((pin, index) => {
+        pin.children.forEach(child => {
+          if (child.userData.pulse === 'outer') {
+            const phase = (time * 0.0014 + index * 0.35) % 1;
+            const scale = 0.92 + phase * 0.46;
+            child.scale.set(scale, scale, scale);
+            child.material.opacity = 0.22 * (1 - phase);
+          }
+          if (child.userData.pulse === 'inner') {
+            const scale = 1 + Math.sin(time * 0.0024 + index) * 0.045;
+            child.scale.set(scale, scale, scale);
+          }
+        });
+      });
       controls.update();
       renderer.render(scene, camera);
     }
